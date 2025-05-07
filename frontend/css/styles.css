@@ -555,6 +555,9 @@ h2 {
 .btn-success:hover {
     background-color: #43a047;
 }
+.danger-zone{
+    margin-top: 2rem;
+}
 
 /* Alert Messages */
 .alert {
