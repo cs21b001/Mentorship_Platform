@@ -18,33 +18,39 @@ Profile.belongsTo(User, {
 // Connection associations for User model
 User.hasMany(Connection, {
   as: 'MentorConnections',
-  foreignKey: 'mentorId'
+  foreignKey: 'mentorId',
+  onDelete: 'CASCADE'
 });
 
 User.hasMany(Connection, {
   as: 'MenteeConnections',
-  foreignKey: 'menteeId'
+  foreignKey: 'menteeId',
+  onDelete: 'CASCADE'
 });
 
 User.hasMany(Connection, {
   as: 'InitiatedConnections',
-  foreignKey: 'initiatorId'
+  foreignKey: 'initiatorId',
+  onDelete: 'CASCADE'
 });
 
 // Connection associations for Connection model
 Connection.belongsTo(User, {
   as: 'mentorUser',
-  foreignKey: 'mentorId'
+  foreignKey: 'mentorId',
+  onDelete: 'CASCADE'
 });
 
 Connection.belongsTo(User, {
   as: 'menteeUser',
-  foreignKey: 'menteeId'
+  foreignKey: 'menteeId',
+  onDelete: 'CASCADE'
 });
 
 Connection.belongsTo(User, {
   as: 'initiatorUser',
-  foreignKey: 'initiatorId'
+  foreignKey: 'initiatorId',
+  onDelete: 'CASCADE'
 });
 
 module.exports = {

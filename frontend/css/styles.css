@@ -920,3 +920,56 @@
 #api-error-modal .btn {
     min-width: 100px;
 }
+
+.danger-zone {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    border: 1px solid #dc3545;
+    border-radius: 4px;
+    background-color: #fff;
+}
+
+.danger-zone h3 {
+    color: #dc3545;
+    margin-bottom: 1rem;
+}
+
+.warning-text {
+    color: #dc3545;
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.confirmation-input {
+    margin: 1.5rem 0;
+}
+
+.confirmation-input label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.confirmation-input input {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
+
+.btn-danger:disabled {
+    background-color: #e4606d;
+    border-color: #e4606d;
+    cursor: not-allowed;
+}

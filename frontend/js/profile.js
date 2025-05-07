@@ -465,17 +465,14 @@ function initializeTabs() {
 // Fetch profile data
 async function fetchProfileData() {
     try {
-        console.log('Starting fetchProfileData...');
-        const response = await authenticatedRequest(`${window.config.API_URL}/profile/me`);
-        console.log('Received profile data:', response);
-        updateProfileView(response);
+        const data = await getUserProfile();
+        updateProfileView(data);
+        populateProfileForm(data);
+        updatePendingRequests(document.getElementById('pending-connections'), data);
+        updateActiveConnections(document.getElementById('accepted-connections'), data);
     } catch (error) {
-        console.error('Error in fetchProfileData:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack
-        });
-        throw error;
+        console.error('Error fetching profile data:', error);
+        showError('Failed to load profile data. Please try again.');
     }
 }
 
@@ -512,3 +509,131 @@ async function sendConnectionRequest(userId) {
         throw error;
     }
 }
+
+// Handle edit profile button click
+document.getElementById('edit-profile-btn').addEventListener('click', () => {
+    document.getElementById('profile-view').classList.add('hidden');
+    document.getElementById('profile-form').classList.remove('hidden');
+});
+
+// Handle cancel edit button click
+document.getElementById('cancel-edit-btn').addEventListener('click', () => {
+    document.getElementById('profile-form').classList.add('hidden');
+    document.getElementById('profile-view').classList.remove('hidden');
+});
+
+// Handle profile form submission
+document.getElementById('update-profile-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    try {
+        const formData = new FormData(e.target);
+        const profileData = {
+            bio: formData.get('bio'),
+            skills: formData.get('skills').split(',').map(skill => skill.trim()).filter(skill => skill),
+            interests: formData.get('interests').split(',').map(interest => interest.trim()).filter(interest => interest)
+        };
+
+        await updateProfile(profileData);
+        
+        // Refresh profile data and update view
+        await fetchProfileData();
+        
+        // Switch back to view mode
+        document.getElementById('profile-form').classList.add('hidden');
+        document.getElementById('profile-view').classList.remove('hidden');
+        
+        showSuccess('Profile updated successfully!');
+    } catch (error) {
+        console.error('Error updating profile:', error);
+        showError('Failed to update profile. Please try again.');
+    }
+});
+
+// Populate form with current profile data
+function populateProfileForm(data) {
+    const form = document.getElementById('update-profile-form');
+    if (!form) return;
+
+    // Set bio
+    form.querySelector('#bio').value = data.bio || '';
+    
+    // Set skills
+    form.querySelector('#skills').value = data.skills ? data.skills.join(', ') : '';
+    
+    // Set interests
+    form.querySelector('#interests').value = data.interests ? data.interests.join(', ') : '';
+    
+    // Set role radio button
+    const roleRadio = form.querySelector(`input[name="role"][value="${data.User.role}"]`);
+    if (roleRadio) roleRadio.checked = true;
+    
+    // Set name fields
+    form.querySelector('#first-name').value = data.User.firstName;
+    form.querySelector('#last-name').value = data.User.lastName;
+}
+
+// Delete account
+async function deleteAccount() {
+    try {
+        await authenticatedRequest(
+            `${window.config.API_URL}/profile`,
+            'DELETE'
+        );
+        // Clear auth token and redirect to home page
+        localStorage.removeItem('token');
+        window.location.href = '/frontend/index.html';
+    } catch (error) {
+        console.error('Error deleting account:', error);
+        throw error;
+    }
+}
+
+// Show delete account modal
+function showDeleteAccountModal() {
+    const modal = document.getElementById('delete-account-modal');
+    const confirmBtn = document.getElementById('confirm-delete-account-btn');
+    const cancelBtn = document.getElementById('cancel-delete-account-btn');
+    const closeBtn = modal.querySelector('.close-modal');
+    const confirmationInput = document.getElementById('delete-confirmation');
+
+    modal.style.display = 'block';
+
+    // Enable/disable confirm button based on input
+    confirmationInput.addEventListener('input', (e) => {
+        confirmBtn.disabled = e.target.value !== 'DELETE';
+    });
+
+    // Reset input when modal is shown
+    confirmationInput.value = '';
+    confirmBtn.disabled = true;
+
+    // Handle delete confirmation
+    confirmBtn.addEventListener('click', async () => {
+        try {
+            await deleteAccount();
+            showSuccess('Account deleted successfully');
+            // Redirect will happen in deleteAccount function
+        } catch (error) {
+            showError('Failed to delete account. Please try again.');
+        }
+    });
+
+    // Handle modal close
+    const closeModal = () => {
+        modal.style.display = 'none';
+        confirmationInput.value = '';
+        confirmBtn.disabled = true;
+    };
+
+    cancelBtn.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+// Add event listener for delete account button
+document.getElementById('delete-account-btn').addEventListener('click', showDeleteAccountModal);
