@@ -190,9 +190,29 @@ exports.getAllProfiles = async (req, res) => {
     const { role, skills, interests } = req.query;
     const userId = req.user.id;
 
+    // Get active connections for the current user
+    const activeConnections = await Connection.findAll({
+      where: {
+        [Op.or]: [
+          { mentorId: userId, status: 'accepted' },
+          { menteeId: userId, status: 'accepted' }
+        ]
+      }
+    });
+
+    // Get the user IDs that the current user is connected with
+    const connectedUserIds = activeConnections.map(conn => 
+      conn.mentorId === userId ? conn.menteeId : conn.mentorId
+    );
+
     // Base query
     const whereClause = {
-      userId: { [Op.ne]: userId } // Exclude current user
+      userId: { 
+        [Op.and]: [
+          { [Op.ne]: userId }, // Exclude current user
+          { [Op.notIn]: connectedUserIds } // Exclude connected users
+        ]
+      }
     };
 
     // Add role filter if provided
@@ -230,6 +250,26 @@ exports.getAllProfiles = async (req, res) => {
         return interestsArray.some(interest => profileInterests.includes(interest));
       });
     }
+
+    // Get pending connection requests
+    const pendingRequests = await Connection.findAll({
+      where: {
+        [Op.or]: [
+          { mentorId: userId, status: 'pending' },
+          { menteeId: userId, status: 'pending' }
+        ]
+      }
+    });
+
+    // Get the user IDs that have pending connections
+    const pendingUserIds = pendingRequests.map(req => 
+      req.mentorId === userId ? req.menteeId : req.mentorId
+    );
+
+    // Filter out profiles with pending requests
+    filteredProfiles = filteredProfiles.filter(profile => 
+      !pendingUserIds.includes(profile.userId)
+    );
 
     res.json({
       status: 'success',
