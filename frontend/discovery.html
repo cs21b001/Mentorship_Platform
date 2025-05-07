@@ -33,23 +33,27 @@
                 
                 <div class="filter-section">
                     <form id="filter-form">
-                        <div class="filter-group">
-                            <label for="role-filter">Role</label>
-                            <select id="role-filter">
-                                <option value="">All Roles</option>
-                                <option value="mentor">Mentor</option>
-                                <option value="mentee">Mentee</option>
-                            </select>
+                        <div class="filter-inputs">
+                            <div class="form-group">
+                                <label for="role-filter">Role</label>
+                                <select id="role-filter" name="role">
+                                    <option value="">All Roles</option>
+                                    <option value="mentor">Mentor</option>
+                                    <option value="mentee">Mentee</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="skills-filter">Skills</label>
+                                <input type="text" id="skills-filter" name="skills" placeholder="Enter skills">
+                            </div>
+                            <div class="form-group">
+                                <label for="interests-filter">Interests</label>
+                                <input type="text" id="interests-filter" name="interests" placeholder="Enter interests">
+                            </div>
                         </div>
-                        <div class="filter-group">
-                            <label for="skills-filter">Skills</label>
-                            <input type="text" id="skills-filter" placeholder="e.g., JavaScript, Python">
+                        <div class="filter-buttons">
+                            <button type="submit" class="btn btn-primary">Apply Filters</button>
                         </div>
-                        <div class="filter-group">
-                            <label for="interests-filter">Interests</label>
-                            <input type="text" id="interests-filter" placeholder="e.g., Web Development, AI">
-                        </div>
-                        <button type="submit" class="btn btn-primary">Apply Filters</button>
                     </form>
                 </div>
 
