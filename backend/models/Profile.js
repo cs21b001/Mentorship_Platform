@@ -1,54 +1,50 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
 
-const ProfileSchema = new mongoose.Schema({
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
-  },
-  role: {
-    type: String,
-    enum: ['mentor', 'mentee'],
-    required: [true, 'Role is required']
-  },
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true
-  },
+const Profile = sequelize.define('Profile', {
   bio: {
-    type: String,
-    trim: true,
-    maxlength: [500, 'Bio cannot be more than 500 characters']
+    type: DataTypes.TEXT,
+    allowNull: true,
+    defaultValue: ''
   },
   skills: {
-    type: [String],
-    default: []
+    type: DataTypes.JSON,
+    allowNull: false,
+    defaultValue: [],
+    get() {
+      const rawValue = this.getDataValue('skills');
+      return rawValue ? (Array.isArray(rawValue) ? rawValue : JSON.parse(rawValue)) : [];
+    },
+    set(value) {
+      if (typeof value === 'string') {
+        value = JSON.parse(value);
+      }
+      this.setDataValue('skills', Array.isArray(value) ? value : []);
+    }
   },
   interests: {
-    type: [String],
-    default: []
+    type: DataTypes.JSON,
+    allowNull: false,
+    defaultValue: [],
+    get() {
+      const rawValue = this.getDataValue('interests');
+      return rawValue ? (Array.isArray(rawValue) ? rawValue : JSON.parse(rawValue)) : [];
+    },
+    set(value) {
+      if (typeof value === 'string') {
+        value = JSON.parse(value);
+      }
+      this.setDataValue('interests', Array.isArray(value) ? value : []);
+    }
   },
-  createdAt: {
-    type: Date,
-    default: Date.now
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now
+  userId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    unique: true
   }
+}, {
+  timestamps: true
 });
 
-// Update the updatedAt field on save
-ProfileSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
-});
-
-const Profile = mongoose.model('Profile', ProfileSchema);
+// Note: We'll set up associations after User model is loaded to avoid circular dependencies
 module.exports = Profile;

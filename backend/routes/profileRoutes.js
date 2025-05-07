@@ -5,7 +5,7 @@ const auth = require('../middleware/auth');
 
 // Create or update profile
 // POST /api/profile
-router.post('/', auth, profileController.createUpdateProfile);
+router.post('/', auth, profileController.createOrUpdateProfile);
 
 // Get current user's profile
 // GET /api/profile/me
@@ -13,7 +13,7 @@ router.get('/me', auth, profileController.getCurrentProfile);
 
 // Get profile by user ID
 // GET /api/profile/user/:userId
-router.get('/user/:userId', auth, profileController.getProfileById);
+router.get('/user/:userId', auth, profileController.getProfileByUserId);
 
 // Get all profiles with filters
 // GET /api/profile

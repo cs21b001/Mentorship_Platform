@@ -111,8 +111,24 @@
     transition: color 0.3s ease;
   }
   
-  .nav-link:hover, .nav-link.active {
+  /* Fix for navbar active state */
+  .nav-item a {
+    color: #2c3e50;
+    font-weight: 500;
+    transition: color 0.3s ease;
+    text-decoration: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+  }
+  
+  .nav-item a:hover {
     color: #3498db;
+  }
+  
+  .nav-item a.active {
+    color: #3498db;
+    font-weight: 600;
+    background-color: #ebf5fb;
   }
   
   /* Auth-specific display rules */
@@ -306,11 +322,31 @@
   }
   
   .tag {
-    background-color: #ecf0f1;
-    color: #2c3e50;
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 0.9rem;
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+  }
+  
+  /* Skills tags - Light blue */
+  .tag.skill,
+  .user-skills .tag,
+  .skills-section .tag {
+    background-color: #e3f2fd;
+    color: #1976d2;
+    border: 1px solid #bbdefb;
+  }
+  
+  /* Interests tags - Light purple */
+  .tag.interest,
+  .user-interests .tag,
+  .interests-section .tag {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+    border: 1px solid #e1bee7;
   }
   
   .form-buttons {
@@ -462,11 +498,12 @@
     position: fixed;
     top: 1rem;
     right: 1rem;
-    padding: 1rem;
+    padding: 1rem 2rem;
     border-radius: 4px;
     color: #fff;
     z-index: 1000;
     animation: slideIn 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
   }
   
   .alert-success {
@@ -532,18 +569,18 @@
   }
   
   .user-card-header {
-    padding: 20px;
+    padding: 15px;
     background-color: #f8f9fa;
     display: flex;
     flex-direction: column;
   }
   
   .user-card-body {
-    padding: 20px;
+    padding: 15px;
   }
   
   .user-card-footer {
-    padding: 15px 20px;
+    padding: 10px 15px;
     background-color: #f8f9fa;
     display: flex;
     justify-content: flex-end;
@@ -552,21 +589,60 @@
   .user-name {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
   }
   
+  /* Make user role consistent across cards and modal */
   .user-role {
     display: inline-block;
-    padding: 3px 10px;
+    padding: 2px 8px;
     background-color: #3498db;
     color: white;
-    border-radius: 20px;
+    border-radius: 16px;
     font-size: 0.8rem;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+    width: fit-content;  /* This ensures the tag only takes up as much space as needed */
+  }
+  
+  .user-card-header .user-role {
+    align-self: flex-start;  /* This aligns the role tag to the left in the flex container */
+  }
+  
+  .modal-header .user-role {
+    margin-top: 5px;
   }
   
   .user-skills, .user-interests {
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .user-skills {
     margin-bottom: 15px;
+  }
+  
+  .tag {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 14px;
+    font-size: 0.85rem;
+    margin-right: 6px;
+    margin-bottom: 6px;
+    white-space: nowrap;
+  }
+  
+  /* Add section labels with reduced spacing */
+  .user-skills::before,
+  .user-interests::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #666;
+    width: 100%;
   }
   
   /* Modal Styles */
@@ -579,40 +655,83 @@
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
+    animation: fadeIn 0.3s ease;
   }
   
   .modal-content {
-    background-color: #ffffff;
+    background-color: #fff;
     margin: 10% auto;
-    padding: 30px;
+    padding: 0;
     border-radius: 10px;
-    width: 80%;
-    max-width: 600px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    animation: slideIn 0.3s ease;
   }
   
   .close-modal {
-    float: right;
-    font-size: 1.8rem;
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
     font-weight: bold;
+    color: #666;
     cursor: pointer;
+    transition: color 0.3s ease;
+  }
+  
+  .close-modal:hover {
+    color: #333;
   }
   
   .modal-header {
-    margin-bottom: 20px;
-    border-bottom: 1px solid #ecf0f1;
-    padding-bottom: 15px;
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
   }
   
   .modal-body {
-    margin-bottom: 20px;
+    padding: 20px;
+    color: #555;
   }
   
   .modal-footer {
+    padding: 20px;
+    border-top: 1px solid #eee;
     display: flex;
     justify-content: flex-end;
-    padding-top: 15px;
-    border-top: 1px solid #ecf0f1;
+    gap: 10px;
+  }
+  
+  /* Text styles */
+  .text-bold {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-top: 10px;
+  }
+  
+  /* Animation keyframes */
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideIn {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
   }
   
   /* Utility Classes */
@@ -666,3 +785,138 @@
       margin: 5% auto;
     }
   }
+
+.btn-success {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+}
+
+/* Tab Navigation Styles */
+.tab-navigation {
+    display: flex;
+    gap: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1.5rem;
+    background: #fff;
+    padding: 0 1rem;
+}
+
+.tab-button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 1rem;
+    color: #666;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    font-weight: 500;
+}
+
+.tab-button:hover {
+    color: #3498db;
+}
+
+.tab-button.active {
+    color: #3498db;
+    border-bottom-color: #3498db;
+}
+
+.tab-content {
+    display: none;
+    padding: 1rem;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* Section Headers */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+    padding: 0.5rem 0;
+}
+
+.section-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: #2c3e50;
+}
+
+/* Error Modal Specific Styles */
+.error-icon {
+    font-size: 3rem;
+    text-align: center;
+    margin: 1rem 0;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+#role-error-modal .modal-body {
+    text-align: center;
+}
+
+#role-error-modal .modal-body p {
+    margin: 0.5rem 0;
+    line-height: 1.5;
+}
+
+#role-error-modal .text-bold {
+    color: #e74c3c;
+    font-weight: 600;
+    margin-top: 1rem;
+}
+
+#role-error-modal .modal-content {
+    max-width: 450px;
+}
+
+#api-error-modal .modal-body {
+    text-align: center;
+    padding: 30px 20px;
+}
+
+#api-error-modal .error-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    animation: shake 0.5s ease-in-out;
+}
+
+#api-error-modal #api-error-message {
+    color: #e74c3c;
+    font-size: 1.1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+#api-error-modal .modal-content {
+    max-width: 400px;
+}
+
+#api-error-modal .modal-footer {
+    justify-content: center;
+}
+
+#api-error-modal .btn {
+    min-width: 100px;
+}

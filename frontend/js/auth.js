@@ -20,142 +20,11 @@ function checkAuthStatus() {
     }
 }
 
-// Handle user registration
-async function registerUser(userData) {
-    try {
-        const response = await fetch(`${API_URL}/auth/register`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(userData)
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.msg || 'Registration failed');
-        }
-        
-        // Save auth data
-        localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-        
-        // Redirect to profile setup
-        window.location.href = 'profile.html';
-        
-    } catch (error) {
-        console.error('Registration error:', error);
-        return { error: error.message };
-    }
-}
-
-// Handle user login
-async function loginUser(email, password) {
-    try {
-        console.log('Attempting login for:', email);
-        const response = await fetch(`${API_URL}/auth/login`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
-
-        const data = await response.json();
-        console.log('Login response:', data);
-        
-        if (!response.ok) {
-            throw new Error(data.msg || 'Login failed');
-        }
-        
-        // Save auth data
-        localStorage.setItem(TOKEN_KEY, data.token);
-        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
-        
-        console.log('Login successful, redirecting to profile...');
-        // Redirect to profile page
-        window.location.href = 'profile.html';
-        
-    } catch (error) {
-        console.error('Login error:', error);
-        return { error: error.message };
-    }
-}
-
-// Handle user logout
-function logoutUser() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-    window.location.href = 'index.html';
-}
-
-// Get current user
-function getCurrentUser() {
-    const userStr = localStorage.getItem(USER_KEY);
-    if (!userStr) return null;
-    
-    try {
-        return JSON.parse(userStr);
-    } catch (error) {
-        console.error('Error parsing user data:', error);
-        return null;
-    }
-}
-
-// Get auth token
-function getToken() {
-    return localStorage.getItem(TOKEN_KEY);
-}
-
-// Make authenticated API request
-window.authenticatedRequest = async function(url, method = 'GET', body = null) {
-    try {
-        const token = getToken();
-        
-        if (!token) {
-            throw new Error('Authentication required');
-        }
-        
-        const headers = {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-        };
-        
-        const options = {
-            method,
-            headers
-        };
-        
-        if (body && (method === 'POST' || method === 'PUT')) {
-            options.body = JSON.stringify(body);
-        }
-        
-        const response = await fetch(url, options);
-        
-        const data = await response.json();
-        
-        if (!response.ok) {
-            throw new Error(data.msg || 'Request failed');
-        }
-        
-        return data;
-    } catch (error) {
-        console.error('API request error:', error);
-        
-        // Redirect to login if unauthorized
-        if (error.message === 'Authentication required' || error.message === 'Token is not valid') {
-            logoutUser();
-        }
-        
-        throw error;
-    }
-}
-
-// Register form submit handler
-if (document.getElementById('register-form')) {
+// Initialize register form
+function initializeRegisterForm() {
     const registerForm = document.getElementById('register-form');
-    
+    if (!registerForm) return;
+
     registerForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -165,22 +34,32 @@ if (document.getElementById('register-form')) {
         });
         
         // Get form values
-        const name = document.getElementById('name').value.trim();
+        const firstName = document.getElementById('first-name').value.trim();
+        const lastName = document.getElementById('last-name').value.trim();
         const email = document.getElementById('email').value.trim();
         const password = document.getElementById('password').value;
         const confirmPassword = document.getElementById('confirm-password').value;
         const role = document.getElementById('role').value;
-        const skills = document.getElementById('skills').value
+        const skills = document.getElementById('skills')?.value
             .split(',')
             .map(skill => skill.trim())
-            .filter(skill => skill);
-        const bio = document.getElementById('bio').value.trim();
+            .filter(skill => skill) || [];
+        const interests = document.getElementById('interests')?.value
+            .split(',')
+            .map(interest => interest.trim())
+            .filter(interest => interest) || [];
+        const bio = document.getElementById('bio')?.value.trim() || '';
         
         // Basic validation
         let hasError = false;
         
-        if (!name) {
-            document.getElementById('name-error').textContent = 'Name is required';
+        if (!firstName) {
+            document.getElementById('first-name-error').textContent = 'First name is required';
+            hasError = true;
+        }
+        
+        if (!lastName) {
+            document.getElementById('last-name-error').textContent = 'Last name is required';
             hasError = true;
         }
         
@@ -219,11 +98,13 @@ if (document.getElementById('register-form')) {
         
         try {
             const userData = {
-                name,
+                firstName,
+                lastName,
                 email,
                 password,
                 role,
                 skills,
+                interests,
                 bio
             };
             
@@ -240,10 +121,11 @@ if (document.getElementById('register-form')) {
     });
 }
 
-// Login form submit handler
-if (document.getElementById('login-form')) {
+// Initialize login form
+function initializeLoginForm() {
     const loginForm = document.getElementById('login-form');
-    
+    if (!loginForm) return;
+
     loginForm.addEventListener('submit', async (e) => {
         e.preventDefault();
         
@@ -293,21 +175,181 @@ if (document.getElementById('login-form')) {
     });
 }
 
-// Logout button handler
-if (document.getElementById('logout-btn')) {
-    document.getElementById('logout-btn').addEventListener('click', (e) => {
+// Initialize logout button
+function initializeLogoutButton() {
+    const logoutBtn = document.getElementById('logout-btn');
+    if (!logoutBtn) return;
+
+    logoutBtn.addEventListener('click', (e) => {
         e.preventDefault();
         logoutUser();
     });
 }
 
-// Check auth status on page load
-document.addEventListener('DOMContentLoaded', () => {
-    checkAuthStatus();
-});
+// Handle user registration
+async function registerUser(userData) {
+    try {
+        const response = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.msg || 'Registration failed');
+        }
+        
+        // Save auth data
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        
+        // Redirect to profile setup
+        window.location.href = 'profile.html';
+        
+    } catch (error) {
+        console.error('Registration error:', error);
+        return { error: error.message };
+    }
+}
+
+// Handle user login
+async function loginUser(email, password) {
+    try {
+        console.log('Attempting login for:', email);
+        const response = await fetch(`${API_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
+
+        const data = await response.json();
+        console.log('Login response:', data);
+        
+        if (!response.ok) {
+            throw new Error(data.msg || 'Login failed');
+        }
+        
+        if (!data.token) {
+            throw new Error('No token received from server');
+        }
+        
+        // Save auth data
+        localStorage.setItem(TOKEN_KEY, data.token);
+        localStorage.setItem(USER_KEY, JSON.stringify(data.user));
+        
+        // Verify token was saved
+        const savedToken = localStorage.getItem(TOKEN_KEY);
+        if (!savedToken) {
+            throw new Error('Failed to save token');
+        }
+        
+        console.log('Login successful, token saved, redirecting to profile...');
+        // Redirect to profile page
+        window.location.href = 'profile.html';
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        return { error: error.message };
+    }
+}
+
+// Handle user logout
+function logoutUser() {
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    window.location.href = 'index.html';
+}
+
+// Get current user
+function getCurrentUser() {
+    const userStr = localStorage.getItem(USER_KEY);
+    if (!userStr) return null;
+    
+    try {
+        return JSON.parse(userStr);
+    } catch (error) {
+        console.error('Error parsing user data:', error);
+        return null;
+    }
+}
+
+// Get auth token
+function getToken() {
+    return localStorage.getItem(TOKEN_KEY);
+}
+
+// Make authenticated API request
+window.authenticatedRequest = async function(url, method = 'GET', body = null) {
+    try {
+        const token = getToken();
+        console.log('Token from storage:', token ? 'Present' : 'Missing');
+        
+        if (!token) {
+            throw new Error('Authentication required');
+        }
+        
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        };
+        
+        console.log('Making authenticated request to:', url);
+        console.log('Request headers:', { ...headers, Authorization: 'Bearer [HIDDEN]' });
+        
+        const options = {
+            method,
+            headers
+        };
+        
+        if (body && (method === 'POST' || method === 'PUT')) {
+            options.body = JSON.stringify(body);
+        }
+        
+        const response = await fetch(url, options);
+        console.log('Response status:', response.status);
+        
+        const data = await response.json();
+        console.log('Response data:', data);
+        
+        if (!response.ok) {
+            const error = new Error(data.message || data.msg || 'Request failed');
+            error.response = data;
+            error.status = response.status;
+            throw error;
+        }
+        
+        return data;
+    } catch (error) {
+        console.error('API request error:', error);
+        
+        // Redirect to login if unauthorized
+        if (error.status === 401 || 
+            error.message === 'Authentication required' || 
+            error.message === 'Token is not valid') {
+            console.log('Authentication error detected, logging out...');
+            logoutUser();
+        }
+        
+        throw error;
+    }
+}
 
 // Email validation helper
 function validateEmail(email) {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
 }
+
+// Initialize forms and buttons when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
+    initializeLoginForm();
+    initializeRegisterForm();
+    initializeLogoutButton();
+});

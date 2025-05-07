@@ -1,44 +1,77 @@
-const mongoose = require('mongoose');
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/db');
+const User = require('./User');
 
-const ConnectionSchema = new mongoose.Schema({
-  mentor: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+const Connection = sequelize.define('Connection', {
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
   },
-  mentee: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  mentorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
   },
-  initiator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+  menteeId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
+  },
+  initiatorId: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Users',
+      key: 'id'
+    }
   },
   status: {
-    type: String,
-    enum: ['pending', 'accepted', 'rejected'],
-    default: 'pending'
+    type: DataTypes.ENUM('pending', 'accepted', 'rejected'),
+    defaultValue: 'pending'
   },
   createdAt: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   },
   updatedAt: {
-    type: Date,
-    default: Date.now
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW
   }
+}, {
+  timestamps: true,
+  indexes: [
+    {
+      unique: true,
+      fields: ['mentorId', 'menteeId', 'status'],
+      name: 'unique_mentor_mentee_status'
+    }
+  ]
 });
 
-// Prevent duplicate connection requests
-ConnectionSchema.index({ mentor: 1, mentee: 1 }, { unique: true });
-
-// Update the updatedAt field on save
-ConnectionSchema.pre('save', function(next) {
-  this.updatedAt = Date.now();
-  next();
+// Define associations
+Connection.belongsTo(User, { 
+  as: 'mentor', 
+  foreignKey: 'mentorId',
+  onDelete: 'CASCADE'
 });
 
-const Connection = mongoose.model('Connection', ConnectionSchema);
+Connection.belongsTo(User, { 
+  as: 'mentee', 
+  foreignKey: 'menteeId',
+  onDelete: 'CASCADE'
+});
+
+Connection.belongsTo(User, { 
+  as: 'initiator', 
+  foreignKey: 'initiatorId',
+  onDelete: 'CASCADE'
+});
+
 module.exports = Connection;

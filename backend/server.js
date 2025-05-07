@@ -1,7 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const connectDB = require('./config/db');
+const { testConnection } = require('./config/db');
+
+// Load model associations
+require('./models/associations');
 
 const authRoutes = require('./routes/authRoutes');
 const profileRoutes = require('./routes/profileRoutes');
@@ -11,7 +14,7 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Connect to database
-connectDB();
+testConnection();
 
 // Middleware
 app.use(cors({

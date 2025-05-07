@@ -6,19 +6,23 @@ const auth = require('../middleware/auth');
 // @route   POST /api/connections/request
 // @desc    Send a connection request
 // @access  Private
-router.post('/request', auth, connectionController.sendConnectionRequest);
+router.post('/request', auth, connectionController.createConnectionRequest);
 
 // @route   GET /api/connections
 // @desc    Get user's connections
 // @access  Private
-router.get('/', auth, connectionController.getUserConnections);
+router.get('/', auth, connectionController.getConnections);
 
-// Accept or reject connection request
-// PUT /api/connections/respond
-router.put('/respond', auth, connectionController.respondToRequest);
+// Accept connection request
+// POST /api/connections/accept/:requestId
+router.post('/accept/:requestId', auth, connectionController.acceptRequest);
 
-// Delete connection
-// DELETE /api/connections/:connectionId
-router.delete('/:connectionId', auth, connectionController.deleteConnection);
+// Reject connection request
+// POST /api/connections/reject/:requestId
+router.post('/reject/:requestId', auth, connectionController.rejectRequest);
+
+// Cancel connection request
+// POST /api/connections/cancel/:requestId
+router.post('/cancel/:requestId', auth, connectionController.cancelRequest);
 
 module.exports = router;

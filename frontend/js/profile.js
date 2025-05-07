@@ -3,7 +3,7 @@ async function getUserProfile() {
     try {
         console.log('Fetching profile data...');
         const response = await authenticatedRequest(`${window.config.API_URL}/profile/me`);
-        console.log('Profile data received:', response);
+        console.log('Raw profile response:', response);
         return response;
     } catch (error) {
         console.error('Error fetching profile:', error);
@@ -26,268 +26,311 @@ async function updateProfile(profileData) {
     }
 }
 
-// Initialize profile page
-async function initializeProfilePage() {
+// Show user modal
+async function showUserModal(userId) {
     try {
-        console.log('Initializing profile page...');
-        
-        // Check if we're viewing another user's profile
-        const urlParams = new URLSearchParams(window.location.search);
-        const userId = urlParams.get('id');
-        
-        if (userId) {
-            console.log('Fetching profile for user ID:', userId);
-            // Fetch other user's profile
-            try {
-                const response = await authenticatedRequest(`${window.config.API_URL}/profile/user/${userId}`);
-                console.log('Received profile data:', response);
-                updateProfileView(response);
-                // Hide edit functionality for other users' profiles
-                const editButton = document.getElementById('edit-profile-btn');
-                if (editButton) editButton.style.display = 'none';
-                
-                // Hide the profile form
-                const profileForm = document.getElementById('profile-form');
-                if (profileForm) profileForm.style.display = 'none';
-                
-                // Show the profile view
-                const profileView = document.getElementById('profile-view');
-                if (profileView) profileView.style.display = 'block';
-            } catch (error) {
-                console.error('Error fetching user profile:', error);
-                showError('Failed to load user profile. Please try again.');
-            }
-            return;
+        // Convert userId to number if it's a string
+        const numericUserId = parseInt(userId, 10);
+        if (isNaN(numericUserId)) {
+            throw new Error('Invalid user ID');
         }
+
+        console.log('Fetching user profile for modal:', numericUserId);
         
-        // Continue with normal profile initialization
-        const profileForm = document.getElementById('profile-form');
-        const profileView = document.getElementById('profile-view');
+        // Fetch both profiles in parallel
+        const [profile, currentUserProfile] = await Promise.all([
+            authenticatedRequest(`${window.config.API_URL}/profile/user/${numericUserId}`),
+            authenticatedRequest(`${window.config.API_URL}/profile/me`)
+        ]);
         
-        if (!profileForm && !profileView) {
-            console.error('Profile elements not found');
-            return;
+        console.log('Profile data received:', profile);
+        console.log('Current user profile:', currentUserProfile);
+
+        const modal = document.getElementById('user-modal');
+        const modalUserName = document.getElementById('modal-user-name');
+        const modalUserRole = document.getElementById('modal-user-role');
+        const modalUserBio = document.getElementById('modal-user-bio');
+        const modalUserSkills = document.getElementById('modal-user-skills');
+        const modalUserInterests = document.getElementById('modal-user-interests');
+        const sendRequestBtn = document.getElementById('send-request-btn');
+
+        if (!modal || !modalUserName || !modalUserRole || !modalUserBio || !modalUserSkills || !modalUserInterests) {
+            throw new Error('Required modal elements not found');
         }
-        
-        // Get profile data
-        const profile = await getUserProfile();
-        console.log('Profile data to display:', profile);
-        
-        // Display profile data
-        if (profileView) {
-            console.log('Updating profile view with data...');
-            updateProfileView(profile);
-        }
-        
-        // Handle edit profile form
-        if (profileForm) {
-            console.log('Setting up edit form...');
-            // Populate form with existing data
-            const firstNameInput = document.getElementById('first-name');
-            const lastNameInput = document.getElementById('last-name');
-            const bioInput = document.getElementById('bio');
-            const skillsInput = document.getElementById('skills');
-            const interestsInput = document.getElementById('interests');
-            
-            if (firstNameInput) firstNameInput.value = profile.firstName || '';
-            if (lastNameInput) lastNameInput.value = profile.lastName || '';
-            if (bioInput) bioInput.value = profile.bio || '';
-            if (skillsInput) skillsInput.value = profile.skills?.join(', ') || '';
-            if (interestsInput) interestsInput.value = profile.interests?.join(', ') || '';
-            
-            // Set role radio button
-            const roleRadio = document.querySelector(`input[name="role"][value="${profile.role}"]`);
-            if (roleRadio) {
-                roleRadio.checked = true;
-            }
-            
-            // Remove existing event listeners
-            const newForm = profileForm.cloneNode(true);
-            profileForm.parentNode.replaceChild(newForm, profileForm);
-            
-            // Add new event listener
-            newForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
+
+        modalUserName.textContent = `${profile.User.firstName} ${profile.User.lastName}`;
+        modalUserRole.textContent = profile.User.role;
+        modalUserBio.textContent = profile.bio || 'No bio available';
+
+        modalUserSkills.innerHTML = profile.skills && profile.skills.length > 0
+            ? profile.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
+            : 'No skills listed';
+
+        modalUserInterests.innerHTML = profile.interests && profile.interests.length > 0
+            ? profile.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
+            : 'No interests listed';
+
+        // Show/hide send request button based on connection status
+        if (sendRequestBtn) {
+            // Hide the button for existing connections or pending requests
+            const isConnected = currentUserProfile.activeConnections?.some(conn => 
+                conn.mentorId === numericUserId || conn.menteeId === numericUserId
+            );
+            const hasPendingRequest = currentUserProfile.pendingRequests?.some(req => 
+                req.mentorId === numericUserId || req.menteeId === numericUserId
+            );
+
+            if (isConnected || hasPendingRequest) {
+                sendRequestBtn.style.display = 'none';
+            } else {
+                sendRequestBtn.style.display = 'block';
+                sendRequestBtn.dataset.userId = numericUserId;
                 
-                const formData = {
-                    firstName: firstNameInput?.value.trim() || '',
-                    lastName: lastNameInput?.value.trim() || '',
-                    role: document.querySelector('input[name="role"]:checked')?.value || '',
-                    bio: bioInput?.value.trim() || '',
-                    skills: skillsInput?.value
-                        .split(',')
-                        .map(skill => skill.trim())
-                        .filter(skill => skill) || [],
-                    interests: interestsInput?.value
-                        .split(',')
-                        .map(interest => interest.trim())
-                        .filter(interest => interest) || []
-                };
+                // Remove any existing click event listeners
+                const newSendRequestBtn = sendRequestBtn.cloneNode(true);
+                sendRequestBtn.parentNode.replaceChild(newSendRequestBtn, sendRequestBtn);
                 
-                try {
-                    await updateProfile(formData);
-                    showSuccess('Profile updated successfully!');
-                    // Refresh profile view
+                // Add click event listener
+                newSendRequestBtn.addEventListener('click', async () => {
+                    try {
+                        await sendConnectionRequest(numericUserId);
+                        showSuccess('Connection request sent successfully!');
+                        closeUserModal();
+                        // Refresh the connections data
                     await fetchProfileData();
                 } catch (error) {
-                    console.error('Error updating profile:', error);
-                    showError('Failed to update profile. Please try again.');
+                        console.error('Error sending connection request:', error);
+                        if (error.message.includes('already exists')) {
+                            showError('A connection request already exists with this user.');
+                        } else {
+                            showError('Failed to send connection request. Please try again.');
+                        }
                 }
             });
         }
-        
-        // Handle edit button
-        const editButton = document.getElementById('edit-profile-btn');
-        if (editButton) {
-            const newEditButton = editButton.cloneNode(true);
-            editButton.parentNode.replaceChild(newEditButton, editButton);
-            
-            newEditButton.addEventListener('click', () => {
-                if (profileView) profileView.classList.add('hidden');
-                if (profileForm) profileForm.classList.remove('hidden');
-            });
-        }
-        
-        // Handle cancel button
-        const cancelButton = document.getElementById('cancel-edit-btn');
-        if (cancelButton) {
-            const newCancelButton = cancelButton.cloneNode(true);
-            cancelButton.parentNode.replaceChild(newCancelButton, cancelButton);
-            
-            newCancelButton.addEventListener('click', () => {
-                if (profileForm) profileForm.classList.add('hidden');
-                if (profileView) profileView.classList.remove('hidden');
-            });
         }
 
-        // Handle tab switching
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        // Remove existing event listeners from tab buttons
-        tabButtons.forEach(button => {
-            const newButton = button.cloneNode(true);
-            button.parentNode.replaceChild(newButton, button);
-            
-            newButton.addEventListener('click', () => {
-                // Remove active class from all buttons and contents
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                tabContents.forEach(content => content.classList.remove('active'));
-                
-                // Add active class to clicked button and corresponding content
-                newButton.classList.add('active');
-                const tabId = newButton.dataset.tab;
-                const targetContent = document.getElementById(`${tabId}-connections`);
-                if (targetContent) targetContent.classList.add('active');
-            });
-        });
-        
+        modal.style.display = 'block';
     } catch (error) {
-        console.error('Error initializing profile page:', error);
-        showError('Failed to load profile. Please try again.');
+        console.error('Error showing user modal:', error);
+        showError('Failed to load user profile. Please try again.');
     }
 }
 
-// Update profile view with data
-function updateProfileView(data) {
-    console.log('Updating profile view with data:', data);
-    
-    try {
-        // Update basic info
-        const nameElement = document.getElementById('profile-name');
-        const emailElement = document.getElementById('profile-email');
-        const roleElement = document.getElementById('profile-role');
-        const bioElement = document.getElementById('profile-bio');
-        const skillsContainer = document.getElementById('profile-skills');
-        const interestsContainer = document.getElementById('profile-interests');
-        const pendingConnectionsContainer = document.getElementById('pending-connections');
-        const acceptedConnectionsContainer = document.getElementById('accepted-connections');
-
-        if (nameElement) nameElement.textContent = `${data.firstName} ${data.lastName}`;
-        if (emailElement) emailElement.textContent = data.email;
-        if (roleElement) roleElement.textContent = data.role;
-        if (bioElement) bioElement.textContent = data.bio || 'No bio available';
-        
-        // Update skills
-        if (skillsContainer) {
-            skillsContainer.innerHTML = data.skills && data.skills.length > 0
-                ? data.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
-                : 'No skills listed';
-        }
-        
-        // Update interests
-        if (interestsContainer) {
-            interestsContainer.innerHTML = data.interests && data.interests.length > 0
-                ? data.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
-                : 'No interests listed';
+// Close user modal
+function closeUserModal() {
+    const modal = document.getElementById('user-modal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
         }
 
         // Update pending requests
-        if (pendingConnectionsContainer) {
+function updatePendingRequests(pendingConnectionsContainer, data) {
+    if (!pendingConnectionsContainer) return;
+
             if (data.pendingRequests && data.pendingRequests.length > 0) {
                 pendingConnectionsContainer.innerHTML = data.pendingRequests.map(request => {
-                    const mentorId = request.mentor._id;
-                    const menteeId = request.mentee._id;
-                    const currentUserId = data.user;
+            const mentorId = request.mentorId;
+            const menteeId = request.menteeId;
+            const currentUserId = data.userId;
                     
                     const isMentor = mentorId === currentUserId;
                     const isMentee = menteeId === currentUserId;
                     
-                    const otherUserEmail = isMentor ? request.mentee.email : request.mentor.email;
-                    const otherUserId = isMentor ? request.mentee._id : request.mentor._id;
-                    
-                    const isRequestSentByMe = request.initiator ? 
-                        request.initiator._id === currentUserId :
-                        (isMentee && request.mentor._id === mentorId) || 
-                        (isMentor && request.mentee._id === menteeId);
+            const otherUser = isMentor ? request.mentee : request.mentor;
+            const otherUserName = `${otherUser.firstName} ${otherUser.lastName}`;
+            const otherUserEmail = otherUser.email;
+            const otherUserId = isMentor ? request.menteeId : request.mentorId;
+            
+            const isRequestSentByMe = request.initiatorId === currentUserId;
                     
                     return `
                         <div class="connection-request">
-                            <div class="request-info" onclick="navigateToProfile('${otherUserId}')" style="cursor: pointer;">
-                                <p><strong>${otherUserEmail}</strong></p>
+                    <div class="request-info" onclick="showUserModal('${otherUserId}')" style="cursor: pointer;">
+                        <p><strong>${otherUserName}</strong></p>
+                        <p>${otherUserEmail}</p>
                                 <p class="request-status">${isRequestSentByMe ? 'Request sent by you' : 'Request sent to you'}</p>
                             </div>
                             ${!isRequestSentByMe ? `
                                 <div class="request-actions">
-                                    <button class="btn btn-success" onclick="event.stopPropagation(); respondToRequest('${request._id}', 'accepted')">Accept</button>
-                                    <button class="btn btn-danger" onclick="event.stopPropagation(); respondToRequest('${request._id}', 'rejected')">Reject</button>
+                            <button onclick="respondToRequest(${request.id}, 'accepted')" class="btn btn-success">Accept</button>
+                            <button onclick="respondToRequest(${request.id}, 'rejected')" class="btn btn-danger">Reject</button>
                                 </div>
                             ` : ''}
                         </div>
                     `;
                 }).join('');
             } else {
-                pendingConnectionsContainer.innerHTML = '<div class="empty-state"><p>No pending requests</p></div>';
+        pendingConnectionsContainer.innerHTML = '<p>No pending connection requests</p>';
             }
         }
 
-        // Update active connections
-        if (acceptedConnectionsContainer) {
-            if (data.activeConnections && data.activeConnections.length > 0) {
-                acceptedConnectionsContainer.innerHTML = data.activeConnections.map(connection => {
-                    const isMentor = connection.mentor._id === data.user;
-                    const otherUserEmail = isMentor ? connection.mentee.email : connection.mentor.email;
-                    const otherUserId = isMentor ? connection.mentee._id : connection.mentor._id;
-                    
-                    return `
-                        <div class="connection">
-                            <div class="connection-info" onclick="navigateToProfile('${otherUserId}')" style="cursor: pointer;">
-                                <p><strong>${otherUserEmail}</strong></p>
-                                <p class="connection-role">${isMentor ? 'Mentee' : 'Mentor'}</p>
-                            </div>
-                            <div class="connection-actions">
-                                <button class="btn btn-danger" onclick="event.stopPropagation(); removeConnection('${connection._id}')">Remove Connection</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            } else {
-                acceptedConnectionsContainer.innerHTML = '<div class="empty-state"><p>No active connections</p></div>';
-            }
+        // Handle remove connection modal
+function showRemoveConnectionModal(connectionId, userName) {
+    const modal = document.getElementById('remove-connection-modal');
+    const userNameElement = document.getElementById('remove-connection-user-name');
+    const confirmBtn = document.getElementById('confirm-remove-btn');
+    const cancelBtn = document.getElementById('cancel-remove-btn');
+    const closeBtn = modal.querySelector('.close-modal');
+
+    userNameElement.textContent = userName;
+    modal.style.display = 'block';
+
+    // Remove any existing event listeners
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Add event listeners
+    newConfirmBtn.addEventListener('click', async () => {
+        try {
+            await removeConnection(connectionId);
+            modal.style.display = 'none';
+            showSuccess('Connection removed successfully');
+            await fetchProfileData(); // Refresh the connections list
+        } catch (error) {
+            console.error('Error removing connection:', error);
+            showError('Failed to remove connection. Please try again.');
         }
+    });
+
+    const closeModal = () => {
+        modal.style.display = 'none';
+    };
+
+    cancelBtn.addEventListener('click', closeModal);
+    closeBtn.addEventListener('click', closeModal);
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+}
+
+// Update active connections
+function updateActiveConnections(acceptedConnectionsContainer, data) {
+    if (!acceptedConnectionsContainer) {
+        console.log('No accepted connections container found');
+        return;
+    }
+
+    console.log('Updating active connections:', data.activeConnections);
+
+    if (data.activeConnections && data.activeConnections.length > 0) {
+        acceptedConnectionsContainer.innerHTML = data.activeConnections.map(connection => {
+            // Determine if the current user is the mentor or mentee
+            const isMentor = connection.mentorId === data.userId;
+            
+            // Get the other user's data based on the role
+            const otherUser = isMentor ? connection.mentee : connection.mentor;
+            const otherUserName = `${otherUser.firstName} ${otherUser.lastName}`;
+            const otherUserEmail = otherUser.email;
+            const otherUserId = isMentor ? connection.menteeId : connection.mentorId;
+                    
+            return `
+                <div class="connection">
+                    <div class="connection-info" onclick="showUserModal(${otherUserId})" style="cursor: pointer;">
+                        <p><strong>${otherUserName}</strong></p>
+                        <p>${otherUserEmail}</p>
+                        <p class="connection-role">${isMentor ? 'You are mentoring' : 'Your mentor'}</p>
+                    </div>
+                    <div class="connection-actions">
+                        <button onclick="showRemoveConnectionModal(${connection.id}, '${otherUserName}')" class="btn btn-danger">Remove Connection</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+        
+        // Show the container and hide empty state
+        const emptyState = acceptedConnectionsContainer.querySelector('.empty-state');
+        if (emptyState) emptyState.classList.add('hidden');
+    } else {
+        // Show empty state message
+        acceptedConnectionsContainer.innerHTML = `
+            <div class="empty-state">
+                <p>No active connections yet.</p>
+                <p>Head to the <a href="discovery.html">Discovery</a> page to find mentors or mentees!</p>
+            </div>
+        `;
+    }
+}
+
+// Update profile view
+function updateProfileView(data) {
+    try {
+        console.log('Starting updateProfileView with data:', data);
+        
+        // Update user info
+        const nameElement = document.getElementById('profile-name');
+        const emailElement = document.getElementById('profile-email');
+        const roleElement = document.getElementById('profile-role');
+        const bioElement = document.getElementById('profile-bio');
+        const skillsElement = document.getElementById('profile-skills');
+        const interestsElement = document.getElementById('profile-interests');
+        
+        console.log('Found DOM elements:', {
+            nameElement: !!nameElement,
+            emailElement: !!emailElement,
+            roleElement: !!roleElement,
+            bioElement: !!bioElement,
+            skillsElement: !!skillsElement,
+            interestsElement: !!interestsElement
+        });
+
+        console.log('User data from response:', data.User);
+        
+        if (nameElement) {
+            const fullName = `${data.User?.firstName || ''} ${data.User?.lastName || ''}`.trim();
+            nameElement.textContent = fullName || 'Name not available';
+            console.log('Set name to:', fullName);
+        }
+        if (emailElement && data.User?.email) {
+            emailElement.textContent = data.User.email;
+            console.log('Set email to:', data.User.email);
+        }
+        if (roleElement && data.User?.role) {
+            roleElement.textContent = data.User.role;
+            console.log('Set role to:', data.User.role);
+        }
+        if (bioElement) {
+            bioElement.textContent = data.bio || 'No bio available';
+            console.log('Set bio to:', data.bio || 'No bio available');
+        }
+        if (skillsElement) {
+            const skillsHtml = data.skills && data.skills.length > 0
+                ? data.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
+                : 'No skills listed';
+            skillsElement.innerHTML = skillsHtml;
+            console.log('Set skills to:', skillsHtml);
+        }
+        if (interestsElement) {
+            const interestsHtml = data.interests && data.interests.length > 0
+                ? data.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
+                : 'No interests listed';
+            interestsElement.innerHTML = interestsHtml;
+            console.log('Set interests to:', interestsHtml);
+        }
+
+        // Update connections sections
+        const pendingConnectionsContainer = document.getElementById('pending-connections');
+        const acceptedConnectionsContainer = document.getElementById('accepted-connections');
+        
+        console.log('Found connections containers:', {
+            pendingContainer: !!pendingConnectionsContainer,
+            acceptedContainer: !!acceptedConnectionsContainer
+        });
+
+        updatePendingRequests(pendingConnectionsContainer, data);
+        updateActiveConnections(acceptedConnectionsContainer, data);
+
     } catch (error) {
-        console.error('Error updating profile view:', error);
-        showError('Failed to update profile view. Please refresh the page.');
+        console.error('Error in updateProfileView:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack,
+            data: data
+        });
+        showError('Failed to update profile view. Please try again.');
     }
 }
 
@@ -309,38 +352,31 @@ function navigateToProfile(userId) {
 async function respondToRequest(connectionId, status) {
     try {
         console.log('Responding to connection request:', connectionId, status);
+        const endpoint = status === 'accepted' ? 'accept' : 'reject';
         const response = await authenticatedRequest(
-            `${window.config.API_URL}/connections/respond`,
-            'PUT',
-            { connectionId, status }
+            `${window.config.API_URL}/connections/${endpoint}/${connectionId}`,
+            'POST'
         );
         console.log('Response to request:', response);
-        showSuccess('Connection request updated successfully!');
+        showSuccess(`Connection request ${status} successfully!`);
         // Refresh profile data
         await fetchProfileData();
     } catch (error) {
         console.error('Error responding to request:', error);
-        showError('Failed to update connection request. Please try again.');
+        showError(`Failed to ${status} request. Please try again.`);
     }
 }
 
 // Remove connection
 async function removeConnection(connectionId) {
     try {
-        if (!confirm('Are you sure you want to remove this connection?')) {
-            return;
-        }
-        
-        const response = await authenticatedRequest(
+        await authenticatedRequest(
             `${window.config.API_URL}/connections/${connectionId}`,
             'DELETE'
         );
-        
-        showSuccess('Connection removed successfully!');
-        await fetchProfileData();
     } catch (error) {
         console.error('Error removing connection:', error);
-        showError('Failed to remove connection. Please try again.');
+        throw error;
     }
 }
 
@@ -394,13 +430,85 @@ window.addEventListener('load', () => {
     initializeProfilePage();
 });
 
+// Initialize profile page
+async function initializeProfilePage() {
+    try {
+        console.log('Initializing profile page...');
+        await fetchProfileData();
+        initializeTabs();
+    } catch (error) {
+        console.error('Error initializing profile page:', error);
+        showError('Failed to load profile. Please try again.');
+    }
+}
+
+// Initialize tabs functionality
+function initializeTabs() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const tabId = button.getAttribute('data-tab');
+            
+            // Update active states
+            tabButtons.forEach(btn => btn.classList.remove('active'));
+            tabContents.forEach(content => content.classList.remove('active'));
+            
+            // Set active tab
+            button.classList.add('active');
+            document.getElementById(`${tabId}-connections`).classList.add('active');
+        });
+    });
+}
+
 // Fetch profile data
 async function fetchProfileData() {
     try {
-        const profile = await getUserProfile();
-        updateProfileView(profile);
+        console.log('Starting fetchProfileData...');
+        const response = await authenticatedRequest(`${window.config.API_URL}/profile/me`);
+        console.log('Received profile data:', response);
+        updateProfileView(response);
     } catch (error) {
-        console.error('Error fetching profile data:', error);
-        showError('Failed to refresh profile data. Please try again.');
+        console.error('Error in fetchProfileData:', error);
+        console.error('Error details:', {
+            message: error.message,
+            stack: error.stack
+        });
+        throw error;
+    }
+}
+
+// Initialize page when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    initializeProfilePage();
+    
+    // Handle modal close button
+    const closeModal = document.querySelector('.close-modal');
+    if (closeModal) {
+        closeModal.addEventListener('click', closeUserModal);
+    }
+    
+    // Close modal when clicking outside
+    window.addEventListener('click', (e) => {
+        const modal = document.getElementById('user-modal');
+        if (e.target === modal) {
+            closeUserModal();
+        }
+    });
+});
+
+// Send connection request
+async function sendConnectionRequest(userId) {
+    try {
+        const response = await authenticatedRequest(
+            `${window.config.API_URL}/connections/request`,
+            'POST',
+            { userId }
+        );
+        return response;
+    } catch (error) {
+        console.error('Error sending connection request:', error);
+        throw error;
     }
 }

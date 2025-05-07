@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profile - Mentorship Platform</title>
+    <title>Profile - MentorMatch</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
     <header>
@@ -135,6 +136,52 @@
             </div>
         </section>
     </main>
+
+    <!-- User Profile Modal -->
+    <div id="user-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div class="modal-header">
+                <h2 id="modal-user-name"></h2>
+                <span id="modal-user-role" class="user-role"></span>
+            </div>
+            <div class="modal-body">
+                <div class="bio-section">
+                    <h3>Bio</h3>
+                    <p id="modal-user-bio"></p>
+                </div>
+                <div class="skills-section">
+                    <h3>Skills</h3>
+                    <div id="modal-user-skills" class="tags"></div>
+                </div>
+                <div class="interests-section">
+                    <h3>Interests</h3>
+                    <div id="modal-user-interests" class="tags"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="send-request-btn" class="btn btn-primary">Send Connection Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Remove Connection Confirmation Modal -->
+    <div id="remove-connection-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Remove Connection</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove this connection? This action cannot be undone.</p>
+                <p id="remove-connection-user-name" class="text-bold"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirm-remove-btn" class="btn btn-danger">Remove Connection</button>
+                <button id="cancel-remove-btn" class="btn btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <footer>
         <div class="container">

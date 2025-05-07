@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Find Matches - Mentorship Matching Platform</title>
+    <title>Find Matches - MentorMatch</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
     <header>
@@ -13,12 +14,12 @@
                 <div class="navbar-brand">
                     <a href="index.html">MentorMatch</a>
                 </div>
-                <div class="navbar-menu" id="navbar-menu">
+                <div class="navbar-menu">
                     <ul class="navbar-nav">
-                        <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
-                        <li class="nav-item auth-show"><a href="profile.html" class="nav-link">Profile</a></li>
-                        <li class="nav-item auth-show"><a href="discovery.html" class="nav-link active">Find Matches</a></li>
-                        <li class="nav-item auth-show"><a href="#" class="nav-link" id="logout-btn">Logout</a></li>
+                        <li class="nav-item"><a href="index.html">Home</a></li>
+                        <li class="nav-item"><a href="profile.html">Profile</a></li>
+                        <li class="nav-item"><a href="discovery.html" class="active">Find Matches</a></li>
+                        <li class="nav-item"><a href="#" id="logout-btn">Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -28,66 +29,58 @@
     <main>
         <section class="discovery-section">
             <div class="container">
-                <h1>Find Your Match</h1>
+                <h1>Discover Mentors & Mentees</h1>
                 
                 <div class="filter-section">
-                    <form id="filter-form" class="filter-form">
+                    <form id="filter-form">
                         <div class="filter-group">
                             <label for="role-filter">Role</label>
-                            <select id="role-filter" name="role">
+                            <select id="role-filter">
                                 <option value="">All Roles</option>
-                                <option value="mentor">Mentors</option>
-                                <option value="mentee">Mentees</option>
+                                <option value="mentor">Mentor</option>
+                                <option value="mentee">Mentee</option>
                             </select>
                         </div>
                         <div class="filter-group">
                             <label for="skills-filter">Skills</label>
-                            <input type="text" id="skills-filter" name="skills" placeholder="e.g., JavaScript, Python">
+                            <input type="text" id="skills-filter" placeholder="e.g., JavaScript, Python">
                         </div>
                         <div class="filter-group">
                             <label for="interests-filter">Interests</label>
-                            <input type="text" id="interests-filter" name="interests" placeholder="e.g., Web Development, AI">
+                            <input type="text" id="interests-filter" placeholder="e.g., Web Development, AI">
                         </div>
-                        <div class="filter-buttons">
-                            <button type="submit" class="btn btn-primary">Apply Filters</button>
-                            <button type="reset" class="btn btn-secondary">Clear</button>
-                        </div>
+                        <button type="submit" class="btn btn-primary">Apply Filters</button>
                     </form>
                 </div>
-                
-                <div class="user-cards" id="user-cards">
-                    <!-- User cards will be populated here -->
-                    <div class="empty-state hidden">
+
+                <div id="user-cards" class="user-cards">
+                    <div class="empty-state">
                         <p>No users found matching your criteria.</p>
                     </div>
                 </div>
             </div>
         </section>
-        
-        <!-- User Profile Modal -->
+
+        <!-- User Modal -->
         <div id="user-modal" class="modal">
             <div class="modal-content">
                 <span class="close-modal">&times;</span>
                 <div class="modal-header">
-                    <h2 id="modal-user-name">User Name</h2>
-                    <span class="user-role" id="modal-user-role">Role</span>
+                    <h2 id="modal-user-name"></h2>
+                    <span id="modal-user-role" class="user-role"></span>
                 </div>
                 <div class="modal-body">
-                    <div class="profile-field">
+                    <div class="bio-section">
                         <h3>Bio</h3>
-                        <p id="modal-user-bio">-</p>
+                        <p id="modal-user-bio"></p>
                     </div>
-                    <div class="profile-field">
+                    <div class="skills-section">
                         <h3>Skills</h3>
-                        <div id="modal-user-skills" class="tags-container">
-                            <!-- Skills tags will be populated here -->
-                        </div>
+                        <div id="modal-user-skills" class="tags"></div>
                     </div>
-                    <div class="profile-field">
+                    <div class="interests-section">
                         <h3>Interests</h3>
-                        <div id="modal-user-interests" class="tags-container">
-                            <!-- Interest tags will be populated here -->
-                        </div>
+                        <div id="modal-user-interests" class="tags"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -97,6 +90,41 @@
         </div>
     </main>
 
+    <!-- Role Mismatch Error Modal -->
+    <div id="role-error-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Connection Not Allowed</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="error-icon">⚠️</div>
+                <p>You cannot connect with users who have the same role as you.</p>
+                <p class="text-bold">Mentors can only connect with Mentees, and Mentees can only connect with Mentors.</p>
+            </div>
+            <div class="modal-footer">
+                <button id="understand-btn" class="btn btn-primary">I Understand</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Error Modal -->
+    <div id="api-error-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Error</h2>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="error-icon">❌</div>
+                <p id="api-error-message"></p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary close-modal">OK</button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="container">
             <p>&copy; 2025 MentorMatch Platform</p>
@@ -105,9 +133,9 @@
 
     <!-- Load configuration first -->
     <script src="js/config.js"></script>
-    <!-- Load auth.js before discovery.js -->
+    <!-- Then load auth.js -->
     <script src="js/auth.js"></script>
-    <!-- Then load discovery.js -->
+    <!-- Finally load discovery.js -->
     <script src="js/discovery.js"></script>
 </body>
 </html>

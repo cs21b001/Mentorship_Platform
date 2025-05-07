@@ -3,8 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Mentorship Matching Platform</title>
+    <title>Register - MentorMatch</title>
     <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
 </head>
 <body>
     <header>
@@ -32,9 +33,14 @@
                     <div class="error-message" id="form-error"></div>
                     <form id="register-form">
                         <div class="form-group">
-                            <label for="name">Full Name</label>
-                            <input type="text" id="name" name="name" required>
-                            <div class="error-message" id="name-error"></div>
+                            <label for="first-name">First Name</label>
+                            <input type="text" id="first-name" name="firstName" required>
+                            <div class="error-message" id="first-name-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="last-name">Last Name</label>
+                            <input type="text" id="last-name" name="lastName" required>
+                            <div class="error-message" id="last-name-error"></div>
                         </div>
                         <div class="form-group">
                             <label for="email">Email</label>
@@ -64,6 +70,11 @@
                             <label for="skills">Skills (comma separated)</label>
                             <input type="text" id="skills" name="skills" placeholder="e.g., JavaScript, React, Node.js">
                             <div class="error-message" id="skills-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="interests">Interests (comma separated)</label>
+                            <input type="text" id="interests" name="interests" placeholder="e.g., Web Development, AI, Machine Learning">
+                            <div class="error-message" id="interests-error"></div>
                         </div>
                         <div class="form-group">
                             <label for="bio">Short Bio</label>
