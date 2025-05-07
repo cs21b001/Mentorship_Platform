@@ -38,10 +38,14 @@ async function showUserModal(userId) {
         console.log('Fetching user profile for modal:', numericUserId);
         
         // Fetch both profiles in parallel
-        const [profile, currentUserProfile] = await Promise.all([
+        const [response, currentUserResponse] = await Promise.all([
             authenticatedRequest(`${window.config.API_URL}/profile/user/${numericUserId}`),
             authenticatedRequest(`${window.config.API_URL}/profile/me`)
         ]);
+        
+        // Extract profile data from response
+        const profile = response.data;
+        const currentUserProfile = currentUserResponse;
         
         console.log('Profile data received:', profile);
         console.log('Current user profile:', currentUserProfile);
@@ -62,13 +66,21 @@ async function showUserModal(userId) {
         modalUserRole.textContent = profile.User.role;
         modalUserBio.textContent = profile.bio || 'No bio available';
 
-        modalUserSkills.innerHTML = profile.skills && profile.skills.length > 0
-            ? profile.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
-            : 'No skills listed';
+        // Update skills with consistent styling
+        modalUserSkills.innerHTML = `
+            <div class="tags-container">
+                ${profile.skills && profile.skills.length > 0
+                    ? profile.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
+                    : '<span class="empty-message">No skills listed</span>'}
+            </div>`;
 
-        modalUserInterests.innerHTML = profile.interests && profile.interests.length > 0
-            ? profile.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
-            : 'No interests listed';
+        // Update interests with consistent styling
+        modalUserInterests.innerHTML = `
+            <div class="tags-container">
+                ${profile.interests && profile.interests.length > 0
+                    ? profile.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
+                    : '<span class="empty-message">No interests listed</span>'}
+            </div>`;
 
         // Show/hide send request button based on connection status
         if (sendRequestBtn) {
@@ -97,20 +109,35 @@ async function showUserModal(userId) {
                         showSuccess('Connection request sent successfully!');
                         closeUserModal();
                         // Refresh the connections data
-                    await fetchProfileData();
-                } catch (error) {
+                        await fetchProfileData();
+                    } catch (error) {
                         console.error('Error sending connection request:', error);
                         if (error.message.includes('already exists')) {
                             showError('A connection request already exists with this user.');
                         } else {
                             showError('Failed to send connection request. Please try again.');
                         }
-                }
-            });
-        }
+                    }
+                });
+            }
         }
 
+        // Show the modal
         modal.style.display = 'block';
+
+        // Set up close button functionality
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.onclick = closeUserModal;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                closeUserModal();
+            }
+        };
+
     } catch (error) {
         console.error('Error showing user modal:', error);
         showError('Failed to load user profile. Please try again.');
@@ -123,50 +150,50 @@ function closeUserModal() {
     if (modal) {
         modal.style.display = 'none';
     }
-        }
+}
 
-        // Update pending requests
+// Update pending requests
 function updatePendingRequests(pendingConnectionsContainer, data) {
     if (!pendingConnectionsContainer) return;
 
-            if (data.pendingRequests && data.pendingRequests.length > 0) {
-                pendingConnectionsContainer.innerHTML = data.pendingRequests.map(request => {
+    if (data.pendingRequests && data.pendingRequests.length > 0) {
+        pendingConnectionsContainer.innerHTML = data.pendingRequests.map(request => {
             const mentorId = request.mentorId;
             const menteeId = request.menteeId;
             const currentUserId = data.userId;
-                    
-                    const isMentor = mentorId === currentUserId;
-                    const isMentee = menteeId === currentUserId;
-                    
+            
+            const isMentor = mentorId === currentUserId;
+            const isMentee = menteeId === currentUserId;
+            
             const otherUser = isMentor ? request.mentee : request.mentor;
             const otherUserName = `${otherUser.firstName} ${otherUser.lastName}`;
             const otherUserEmail = otherUser.email;
             const otherUserId = isMentor ? request.menteeId : request.mentorId;
             
             const isRequestSentByMe = request.initiatorId === currentUserId;
-                    
-                    return `
-                        <div class="connection-request">
+            
+            return `
+                <div class="connection-request">
                     <div class="request-info" onclick="showUserModal('${otherUserId}')" style="cursor: pointer;">
                         <p><strong>${otherUserName}</strong></p>
                         <p>${otherUserEmail}</p>
-                                <p class="request-status">${isRequestSentByMe ? 'Request sent by you' : 'Request sent to you'}</p>
-                            </div>
-                            ${!isRequestSentByMe ? `
-                                <div class="request-actions">
+                        <p class="request-status">${isRequestSentByMe ? 'Request sent by you' : 'Request sent to you'}</p>
+                    </div>
+                    ${!isRequestSentByMe ? `
+                        <div class="request-actions">
                             <button onclick="respondToRequest(${request.id}, 'accepted')" class="btn btn-success">Accept</button>
                             <button onclick="respondToRequest(${request.id}, 'rejected')" class="btn btn-danger">Reject</button>
-                                </div>
-                            ` : ''}
                         </div>
-                    `;
-                }).join('');
-            } else {
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
+    } else {
         pendingConnectionsContainer.innerHTML = '<p>No pending connection requests</p>';
-            }
-        }
+    }
+}
 
-        // Handle remove connection modal
+// Handle remove connection modal
 function showRemoveConnectionModal(connectionId, userName) {
     const modal = document.getElementById('remove-connection-modal');
     const userNameElement = document.getElementById('remove-connection-user-name');
@@ -297,18 +324,22 @@ function updateProfileView(data) {
             console.log('Set bio to:', data.bio || 'No bio available');
         }
         if (skillsElement) {
-            const skillsHtml = data.skills && data.skills.length > 0
-                ? data.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
-                : 'No skills listed';
-            skillsElement.innerHTML = skillsHtml;
-            console.log('Set skills to:', skillsHtml);
+            skillsElement.innerHTML = `
+                <div class="user-skills" data-label="Skills">
+                    ${data.skills && data.skills.length > 0
+                        ? data.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
+                        : '<span class="empty-message">No skills listed</span>'}
+                </div>`;
+            console.log('Set skills');
         }
         if (interestsElement) {
-            const interestsHtml = data.interests && data.interests.length > 0
-                ? data.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
-                : 'No interests listed';
-            interestsElement.innerHTML = interestsHtml;
-            console.log('Set interests to:', interestsHtml);
+            interestsElement.innerHTML = `
+                <div class="user-interests" data-label="Interests">
+                    ${data.interests && data.interests.length > 0
+                        ? data.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
+                        : '<span class="empty-message">No interests listed</span>'}
+                </div>`;
+            console.log('Set interests');
         }
 
         // Update connections sections

@@ -315,10 +315,23 @@
     color: #7f8c8d;
   }
   
+  /* Tags Container and Tags */
   .tags-container {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 6px;
+    margin-top: 5px;
+  }
+  
+  .user-skills, .user-interests {
+    margin-bottom: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  
+  .user-skills {
+    margin-bottom: 15px;
   }
   
   .tag {
@@ -326,27 +339,49 @@
     padding: 3px 10px;
     border-radius: 14px;
     font-size: 0.85rem;
-    margin-right: 6px;
-    margin-bottom: 6px;
     white-space: nowrap;
+    transition: all 0.2s ease;
   }
   
   /* Skills tags - Light blue */
-  .tag.skill,
-  .user-skills .tag,
-  .skills-section .tag {
+  .tag.skill {
     background-color: #e3f2fd;
     color: #1976d2;
     border: 1px solid #bbdefb;
   }
   
+  .tag.skill:hover {
+    background-color: #bbdefb;
+  }
+  
   /* Interests tags - Light purple */
-  .tag.interest,
-  .user-interests .tag,
-  .interests-section .tag {
+  .tag.interest {
     background-color: #f3e5f5;
     color: #7b1fa2;
     border: 1px solid #e1bee7;
+  }
+  
+  .tag.interest:hover {
+    background-color: #e1bee7;
+  }
+  
+  /* Section labels for skills and interests */
+  .user-skills::before,
+  .user-interests::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #666;
+    width: 100%;
+  }
+  
+  /* Empty state message */
+  .empty-message {
+    color: #666;
+    font-style: italic;
+    font-size: 0.9rem;
   }
   
   .form-buttons {
@@ -610,39 +645,6 @@
   
   .modal-header .user-role {
     margin-top: 5px;
-  }
-  
-  .user-skills, .user-interests {
-    margin-bottom: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-  }
-  
-  .user-skills {
-    margin-bottom: 15px;
-  }
-  
-  .tag {
-    display: inline-block;
-    padding: 3px 10px;
-    border-radius: 14px;
-    font-size: 0.85rem;
-    margin-right: 6px;
-    margin-bottom: 6px;
-    white-space: nowrap;
-  }
-  
-  /* Add section labels with reduced spacing */
-  .user-skills::before,
-  .user-interests::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 6px;
-    color: #666;
-    width: 100%;
   }
   
   /* Modal Styles */

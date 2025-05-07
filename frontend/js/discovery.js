@@ -173,13 +173,13 @@ function createUserCard(profile) {
             <p class="user-bio">${profile.bio || 'No bio available'}</p>
             <div class="user-skills" data-label="Skills">
                 ${profile.skills && profile.skills.length > 0 
-                    ? profile.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
-                    : 'No skills listed'}
+                    ? profile.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
+                    : '<span class="empty-message">No skills listed</span>'}
             </div>
             <div class="user-interests" data-label="Interests">
                 ${profile.interests && profile.interests.length > 0 
-                    ? profile.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
-                    : 'No interests listed'}
+                    ? profile.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
+                    : '<span class="empty-message">No interests listed</span>'}
             </div>
         </div>
         <div class="user-card-footer">
@@ -225,157 +225,67 @@ function updateUserCards(users) {
     });
 }
 
-// Initialize discovery page
-async function initializeDiscoveryPage() {
-    try {
-        console.log('Initializing discovery page...');
-        
-        // Get initial profiles
-        const profiles = await getProfiles();
-        updateUserCards(profiles);
-        
-        // Handle filter form
-        const filterForm = document.getElementById('filter-form');
-        if (filterForm) {
-            filterForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                // Get form elements
-                const roleFilter = document.getElementById('role-filter');
-                const skillsFilter = document.getElementById('skills-filter');
-                const interestsFilter = document.getElementById('interests-filter');
-                const submitButton = filterForm.querySelector('button[type="submit"]');
-                
-                // Show loading state
-                submitButton.disabled = true;
-                submitButton.textContent = 'Applying Filters...';
-                
-                try {
-                    const filters = {
-                        role: roleFilter.value,
-                        skills: skillsFilter.value.split(',')
-                            .map(s => s.trim())
-                            .filter(s => s.length > 0)
-                            .join(','),
-                        interests: interestsFilter.value.split(',')
-                            .map(i => i.trim())
-                            .filter(i => i.length > 0)
-                            .join(',')
-                    };
-                    
-                    console.log('Applying filters:', filters);
-                    const profiles = await getProfiles(filters);
-                    updateUserCards(profiles);
-                } catch (error) {
-                    console.error('Error applying filters:', error);
-                    showError('Failed to fetch profiles. Please try again.');
-                } finally {
-                    // Reset button state
-                    submitButton.disabled = false;
-                    submitButton.textContent = 'Apply Filters';
-                }
-            });
-        }
-        
-        // Handle view profile button clicks
-        document.addEventListener('click', async (e) => {
-            if (e.target.classList.contains('view-profile-btn')) {
-                const userId = e.target.dataset.userId;
-                try {
-                    console.log('Fetching profile for user:', userId);
-                    const user = await authenticatedRequest(`${window.config.API_URL}/profile/user/${userId}`);
-                    console.log('Profile data received:', user);
-                    showUserModal(user);
-                } catch (error) {
-                    console.error('Error fetching profile:', error);
-                    showError('Failed to load user profile. Please try again.');
-                }
-            }
-        });
-        
-        // Handle send request button
-        const sendRequestBtn = document.getElementById('send-request-btn');
-        if (sendRequestBtn) {
-            sendRequestBtn.addEventListener('click', async () => {
-                const userId = sendRequestBtn.dataset.userId;
-                try {
-                    await sendConnectionRequest(userId);
-                    showSuccess('Connection request sent successfully!');
-                    closeUserModal();
-                } catch (error) {
-                    console.error('Error sending connection request:', error);
-                    // Error is already handled in sendConnectionRequest function
-                }
-            });
-        }
-        
-    } catch (error) {
-        console.error('Error initializing discovery page:', error);
-        showError('Failed to load discovery page. Please try again.');
-    }
-}
-
 // Show user modal
 function showUserModal(response) {
-    const modal = document.getElementById('user-modal');
-    const modalUserName = document.getElementById('modal-user-name');
-    const modalUserRole = document.getElementById('modal-user-role');
-    const modalUserBio = document.getElementById('modal-user-bio');
-    const modalUserSkills = document.getElementById('modal-user-skills');
-    const modalUserInterests = document.getElementById('modal-user-interests');
-    const sendRequestBtn = document.getElementById('send-request-btn');
-    
-    // Extract profile from response data
-    const profile = response.data;
-    console.log('Profile data:', profile);
-    
-    modalUserName.textContent = `${profile.User.firstName} ${profile.User.lastName}`;
-    modalUserRole.textContent = profile.User.role;
-    modalUserBio.textContent = profile.bio || 'No bio available';
-    
-    modalUserSkills.innerHTML = profile.skills && profile.skills.length > 0
-        ? profile.skills.map(skill => `<span class="tag">${skill}</span>`).join('')
-        : 'No skills listed';
-    
-    modalUserInterests.innerHTML = profile.interests && profile.interests.length > 0
-        ? profile.interests.map(interest => `<span class="tag">${interest}</span>`).join('')
-        : 'No interests listed';
-    
-    // Set the user ID for the send request button
-    if (sendRequestBtn) {
-        sendRequestBtn.dataset.userId = profile.userId;
-        
-        // Remove any existing click event listeners
-        const newSendRequestBtn = sendRequestBtn.cloneNode(true);
-        sendRequestBtn.parentNode.replaceChild(newSendRequestBtn, sendRequestBtn);
-        
-        // Add click event listener
-        newSendRequestBtn.addEventListener('click', async () => {
-            try {
-                await sendConnectionRequest(profile.userId);
-                showSuccess('Connection request sent successfully!');
-                closeUserModal();
-            } catch (error) {
-                console.error('Error sending connection request:', error);
-                // Error is already handled in sendConnectionRequest function
-            }
-        });
-    }
-    
-    modal.style.display = 'block';
-    
-    // Add close button functionality
-    const closeBtn = modal.querySelector('.close-modal');
-    if (closeBtn) {
-        closeBtn.onclick = closeUserModal;
-    }
-    
-    // Close modal when clicking outside
-    window.onclick = (event) => {
-        if (event.target === modal) {
-            closeUserModal();
+    try {
+        const modal = document.getElementById('user-modal');
+        const modalUserName = document.getElementById('modal-user-name');
+        const modalUserRole = document.getElementById('modal-user-role');
+        const modalUserBio = document.getElementById('modal-user-bio');
+        const modalUserSkills = document.getElementById('modal-user-skills');
+        const modalUserInterests = document.getElementById('modal-user-interests');
+        const sendRequestBtn = document.getElementById('send-request-btn');
+
+        if (!modal || !modalUserName || !modalUserRole || !modalUserBio || !modalUserSkills || !modalUserInterests || !sendRequestBtn) {
+            throw new Error('Required modal elements not found');
         }
-    };
+
+        // Extract profile data from the response
+        const profile = response.data || response;
+
+        modalUserName.textContent = `${profile.User.firstName} ${profile.User.lastName}`;
+        modalUserRole.textContent = profile.User.role;
+        modalUserBio.textContent = profile.bio || 'No bio available';
+
+        // Update skills with consistent styling
+        modalUserSkills.innerHTML = `
+            <div class="user-skills" data-label="Skills">
+                ${profile.skills && profile.skills.length > 0
+                    ? profile.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
+                    : '<span class="empty-message">No skills listed</span>'}
+            </div>`;
+
+        // Update interests with consistent styling
+        modalUserInterests.innerHTML = `
+            <div class="user-interests" data-label="Interests">
+                ${profile.interests && profile.interests.length > 0
+                    ? profile.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
+                    : '<span class="empty-message">No interests listed</span>'}
+            </div>`;
+
+        // Set up send request button
+        sendRequestBtn.dataset.userId = profile.userId;
+
+        // Show the modal
+        modal.style.display = 'block';
+
+        // Set up close button functionality
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.onclick = closeUserModal;
+        }
+
+        // Close modal when clicking outside
+        window.onclick = (event) => {
+            if (event.target === modal) {
+                closeUserModal();
+            }
+        };
+
+    } catch (error) {
+        console.error('Error showing user modal:', error);
+        showError('Failed to display user profile');
+    }
 }
 
 // Close user modal
@@ -559,5 +469,92 @@ async function cancelRequest(requestId) {
     } catch (error) {
         console.error('Error cancelling request:', error);
         showError('Failed to cancel request. Please try again.');
+    }
+}
+
+// Initialize discovery page
+async function initializeDiscoveryPage() {
+    try {
+        console.log('Initializing discovery page...');
+        
+        // Get initial profiles
+        const profiles = await getProfiles();
+        updateUserCards(profiles);
+        
+        // Handle filter form
+        const filterForm = document.getElementById('filter-form');
+        if (filterForm) {
+            filterForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Get form elements
+                const roleFilter = document.getElementById('role-filter');
+                const skillsFilter = document.getElementById('skills-filter');
+                const interestsFilter = document.getElementById('interests-filter');
+                const submitButton = filterForm.querySelector('button[type="submit"]');
+                
+                // Show loading state
+                submitButton.disabled = true;
+                submitButton.textContent = 'Applying Filters...';
+                
+                try {
+                    const filters = {
+                        role: roleFilter.value,
+                        skills: skillsFilter.value,
+                        interests: interestsFilter.value
+                    };
+                    
+                    console.log('Applying filters:', filters);
+                    const profiles = await getProfiles(filters);
+                    updateUserCards(profiles);
+                } catch (error) {
+                    console.error('Error applying filters:', error);
+                    showError('Failed to fetch profiles. Please try again.');
+                } finally {
+                    // Reset button state
+                    submitButton.disabled = false;
+                    submitButton.textContent = 'Apply Filters';
+                }
+            });
+        }
+        
+        // Handle view profile button clicks
+        document.getElementById('user-cards').addEventListener('click', async (e) => {
+            const viewProfileBtn = e.target.closest('.view-profile-btn');
+            if (viewProfileBtn) {
+                const userId = viewProfileBtn.dataset.userId;
+                try {
+                    console.log('Fetching profile for user:', userId);
+                    const response = await authenticatedRequest(`${window.config.API_URL}/profile/user/${userId}`);
+                    console.log('Profile data received:', response);
+                    showUserModal(response);
+                } catch (error) {
+                    console.error('Error fetching profile:', error);
+                    showError('Failed to load user profile. Please try again.');
+                }
+            }
+        });
+        
+        // Handle send request button clicks
+        document.getElementById('send-request-btn').addEventListener('click', async () => {
+            const userId = document.getElementById('send-request-btn').dataset.userId;
+            if (!userId) {
+                console.error('No user ID found for connection request');
+                return;
+            }
+            
+            try {
+                await sendConnectionRequest(userId);
+                showSuccess('Connection request sent successfully!');
+                closeUserModal();
+            } catch (error) {
+                console.error('Error sending connection request:', error);
+                // Error is already handled in sendConnectionRequest function
+            }
+        });
+        
+    } catch (error) {
+        console.error('Error initializing discovery page:', error);
+        showError('Failed to load discovery page. Please try again.');
     }
 }
