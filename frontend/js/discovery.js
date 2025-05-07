@@ -226,7 +226,7 @@ function updateUserCards(users) {
 }
 
 // Show user modal
-function showUserModal(response) {
+async function showUserModal(response) {
     try {
         const modal = document.getElementById('user-modal');
         const modalUserName = document.getElementById('modal-user-name');
@@ -272,6 +272,9 @@ function showUserModal(response) {
         // Set up close button functionality
         const closeBtn = modal.querySelector('.close-modal');
         if (closeBtn) {
+            // Remove any existing listeners
+            closeBtn.onclick = null;
+            // Add new listener
             closeBtn.onclick = closeUserModal;
         }
 
@@ -284,14 +287,22 @@ function showUserModal(response) {
 
     } catch (error) {
         console.error('Error showing user modal:', error);
-        showError('Failed to display user profile');
+        showError('Failed to load user profile. Please try again.');
     }
 }
 
 // Close user modal
 function closeUserModal() {
     const modal = document.getElementById('user-modal');
-    modal.style.display = 'none';
+    if (modal) {
+        modal.style.display = 'none';
+        // Remove event listeners when closing
+        window.onclick = null;
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.onclick = null;
+        }
+    }
 }
 
 // Helper function to show success messages

@@ -730,21 +730,6 @@ h2 {
     animation: slideIn 0.3s ease;
 }
 
-.close-modal {
-    position: absolute;
-    right: 20px;
-    top: 15px;
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--text-secondary);
-    cursor: pointer;
-    transition: color 0.3s ease;
-}
-
-.close-modal:hover {
-    color: var(--text-primary);
-}
-
 .modal-header {
     padding: 20px;
     border-bottom: 1px solid #eee;
@@ -754,6 +739,29 @@ h2 {
 .modal-header h2 {
     margin: 0;
     font-size: 1.5rem;
+    color: var(--text-primary);
+    padding-right: 40px;
+    word-break: break-word;
+}
+
+.close-modal {
+    position: absolute;
+    right: 20px;
+    top: 15px;
+    font-size: 24px;
+    font-weight: bold;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: color 0.3s ease;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.close-modal:hover {
     color: var(--text-primary);
 }
 

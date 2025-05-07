@@ -128,6 +128,9 @@ async function showUserModal(userId) {
         // Set up close button functionality
         const closeBtn = modal.querySelector('.close-modal');
         if (closeBtn) {
+            // Remove any existing listeners
+            closeBtn.onclick = null;
+            // Add new listener
             closeBtn.onclick = closeUserModal;
         }
 
@@ -149,6 +152,12 @@ function closeUserModal() {
     const modal = document.getElementById('user-modal');
     if (modal) {
         modal.style.display = 'none';
+        // Remove event listeners when closing
+        window.onclick = null;
+        const closeBtn = modal.querySelector('.close-modal');
+        if (closeBtn) {
+            closeBtn.onclick = null;
+        }
     }
 }
 
