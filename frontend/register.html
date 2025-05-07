@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Mentorship Matching Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="index.html">MentorMatch</a>
+                </div>
+                <div class="navbar-menu" id="navbar-menu">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                        <li class="nav-item auth-hidden"><a href="login.html" class="nav-link">Login</a></li>
+                        <li class="nav-item auth-hidden"><a href="register.html" class="nav-link active">Register</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="auth-form">
+            <div class="container">
+                <h1>Create an Account</h1>
+                <div class="form-container">
+                    <div class="error-message" id="form-error"></div>
+                    <form id="register-form">
+                        <div class="form-group">
+                            <label for="name">Full Name</label>
+                            <input type="text" id="name" name="name" required>
+                            <div class="error-message" id="name-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                            <div class="error-message" id="email-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                            <div class="error-message" id="password-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="confirm-password">Confirm Password</label>
+                            <input type="password" id="confirm-password" name="confirm-password" required>
+                            <div class="error-message" id="confirm-password-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="role">I want to join as</label>
+                            <select id="role" name="role" required>
+                                <option value="">Select your role</option>
+                                <option value="mentor">Mentor</option>
+                                <option value="mentee">Mentee</option>
+                            </select>
+                            <div class="error-message" id="role-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="skills">Skills (comma separated)</label>
+                            <input type="text" id="skills" name="skills" placeholder="e.g., JavaScript, React, Node.js">
+                            <div class="error-message" id="skills-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="bio">Short Bio</label>
+                            <textarea id="bio" name="bio" rows="3" placeholder="Tell us about yourself"></textarea>
+                            <div class="error-message" id="bio-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">Register</button>
+                        </div>
+                        <div class="form-footer">
+                            Already have an account? <a href="login.html">Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 MentorMatch Platform</p>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+</body>
+</html>

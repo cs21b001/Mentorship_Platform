@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Mentorship Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="index.html">MentorMatch</a>
+                </div>
+                <div class="navbar-menu" id="navbar-menu">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                        <li class="nav-item auth-show"><a href="profile.html" class="nav-link active">Profile</a></li>
+                        <li class="nav-item auth-show"><a href="discovery.html" class="nav-link">Find Matches</a></li>
+                        <li class="nav-item auth-show"><a href="#" class="nav-link" id="logout-btn">Logout</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="profile-section">
+            <div class="container">
+                <div class="profile-header">
+                    <h1>Your Profile</h1>
+                    <div class="profile-actions">
+                        <button id="edit-profile-btn" class="btn btn-secondary">Edit Profile</button>
+                    </div>
+                </div>
+
+                <div class="profile-content">
+                    <div id="profile-view" class="profile-container">
+                        <div class="profile-info">
+                            <div class="profile-field">
+                                <h3>Name</h3>
+                                <p id="profile-name">-</p>
+                            </div>
+                            <div class="profile-field">
+                                <h3>Email</h3>
+                                <p id="profile-email">-</p>
+                            </div>
+                            <div class="profile-field">
+                                <h3>Role</h3>
+                                <p id="profile-role">-</p>
+                            </div>
+                            <div class="profile-field">
+                                <h3>Bio</h3>
+                                <p id="profile-bio">-</p>
+                            </div>
+                            <div class="profile-field">
+                                <h3>Skills</h3>
+                                <div id="profile-skills" class="tags-container">
+                                    <!-- Skills tags will be populated here -->
+                                </div>
+                            </div>
+                            <div class="profile-field">
+                                <h3>Interests</h3>
+                                <div id="profile-interests" class="tags-container">
+                                    <!-- Interest tags will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="profile-form" class="profile-container hidden">
+                        <form id="update-profile-form">
+                            <div class="form-group">
+                                <label for="first-name">First Name</label>
+                                <input type="text" id="first-name" name="firstName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="last-name">Last Name</label>
+                                <input type="text" id="last-name" name="lastName" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Role</label>
+                                <div class="radio-group">
+                                    <label>
+                                        <input type="radio" name="role" value="mentor" required> Mentor
+                                    </label>
+                                    <label>
+                                        <input type="radio" name="role" value="mentee" required> Mentee
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="bio">Bio</label>
+                                <textarea id="bio" name="bio" rows="4"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="skills">Skills (comma separated)</label>
+                                <input type="text" id="skills" name="skills" placeholder="e.g., JavaScript, Python, Design">
+                            </div>
+                            <div class="form-group">
+                                <label for="interests">Interests (comma separated)</label>
+                                <input type="text" id="interests" name="interests" placeholder="e.g., Web Development, AI, UX Design">
+                            </div>
+                            <div class="form-buttons">
+                                <button type="submit" class="btn btn-primary">Save Profile</button>
+                                <button type="button" id="cancel-edit-btn" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="connections-section">
+                    <h2>Your Connections</h2>
+                    
+                    <div class="tabs">
+                        <button class="tab-btn active" data-tab="pending">Pending Requests</button>
+                        <button class="tab-btn" data-tab="accepted">Active Connections</button>
+                    </div>
+                    
+                    <div id="pending-connections" class="connections-container tab-content active">
+                        <!-- Pending connections will be populated here -->
+                        <div class="empty-state hidden">
+                            <p>No pending connection requests.</p>
+                        </div>
+                    </div>
+                    
+                    <div id="accepted-connections" class="connections-container tab-content">
+                        <!-- Active connections will be populated here -->
+                        <div class="empty-state hidden">
+                            <p>No active connections yet.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 Mentorship Platform. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Load configuration first -->
+    <script src="js/config.js"></script>
+    <!-- Load auth.js before profile.js -->
+    <script src="js/auth.js"></script>
+    <!-- Then load profile.js -->
+    <script src="js/profile.js"></script>
+    <!-- Add error handling for script loading -->
+    <script>
+        window.addEventListener('error', function(e) {
+            if (e.target.tagName === 'SCRIPT') {
+                console.error('Script loading error:', e.target.src);
+                showError('Failed to load required scripts. Please refresh the page.');
+            }
+        }, true);
+    </script>
+</body>
+</html>

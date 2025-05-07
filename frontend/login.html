@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Mentorship Matching Platform</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="index.html">MentorMatch</a>
+                </div>
+                <div class="navbar-menu" id="navbar-menu">
+                    <ul class="navbar-nav">
+                        <li class="nav-item"><a href="index.html" class="nav-link">Home</a></li>
+                        <li class="nav-item auth-hidden"><a href="login.html" class="nav-link active">Login</a></li>
+                        <li class="nav-item auth-hidden"><a href="register.html" class="nav-link">Register</a></li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        <section class="auth-form">
+            <div class="container">
+                <h1>Login to Your Account</h1>
+                <div class="form-container">
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required>
+                            <div class="error-message" id="email-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <input type="password" id="password" name="password" required>
+                            <div class="error-message" id="password-error"></div>
+                        </div>
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                        </div>
+                        <div class="form-footer">
+                            Don't have an account? <a href="register.html">Register</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 MentorMatch Platform</p>
+        </div>
+    </footer>
+
+    <!-- Load configuration first -->
+    <script src="js/config.js"></script>
+    <!-- Then load auth.js -->
+    <script src="js/auth.js"></script>
+</body>
+</html>
+        
