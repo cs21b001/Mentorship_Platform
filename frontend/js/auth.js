@@ -219,7 +219,10 @@ async function registerUser(userData) {
 // Handle user login
 async function loginUser(email, password) {
     try {
-        const response = await fetch(`${API_URL}/auth/login`, {
+        const url = `${API_URL}/auth/login`;
+        console.log('Attempting login at:', url);
+
+        const response = await fetch(url, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -228,9 +231,10 @@ async function loginUser(email, password) {
         });
 
         const data = await response.json();
+        console.log('Login response status:', response.status);
         
         if (!response.ok) {
-            throw new Error(data.msg || 'Login failed');
+            throw new Error(data.msg || data.message || 'Login failed');
         }
         
         if (!data.token) {
@@ -251,7 +255,11 @@ async function loginUser(email, password) {
         window.location.href = 'profile.html';
         
     } catch (error) {
-        console.error('Login error:', error);
+        console.error('Login error details:', {
+            message: error.message,
+            stack: error.stack,
+            type: error.name
+        });
         return { error: error.message };
     }
 }

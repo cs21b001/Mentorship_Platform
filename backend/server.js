@@ -21,9 +21,9 @@ const allowedOrigins = [
     'http://127.0.0.1:5500',
     'http://localhost:5500',
     'http://localhost:3000',
-    'https://mentorship-platform.vercel.app',
-    'https://mentorship-platform-git-main.vercel.app',
-    'https://mentorship-platform-*.vercel.app'
+    'https://mentorship-platform-frontend-two.vercel.app',
+    'https://mentorship-platform-frontend-two-git-main.vercel.app',
+    'https://mentorship-platform-frontend-two-*.vercel.app'
 ];
 
 app.use(cors({
@@ -42,6 +42,7 @@ app.use(cors({
         })) {
             callback(null, true);
         } else {
+            console.log('Origin not allowed by CORS:', origin);
             callback(new Error('Not allowed by CORS'));
         }
     },
@@ -68,8 +69,11 @@ app.use('/api/connections', connectionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error(err.stack);
-    res.status(500).json({ msg: 'Something went wrong!' });
+    console.error('Error:', err);
+    res.status(500).json({ 
+        status: 'error',
+        message: err.message || 'Something went wrong!'
+    });
 });
 
 // Handle 404 routes
