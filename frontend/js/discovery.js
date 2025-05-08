@@ -123,40 +123,62 @@ function showApiError(message) {
     });
 }
 
-// Send connection request
+// Function to show pending request modal
+function showPendingRequestModal() {
+    const modal = document.getElementById('pending-request-modal');
+    modal.style.display = 'block';
+
+    // Close modal functionality
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.onclick = function() {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+}
+
+// Function to send connection request
 async function sendConnectionRequest(userId) {
     try {
-        console.log('Sending connection request to user:', userId);
-        const response = await authenticatedRequest(
-            `${window.config.API_URL}/connections/request`,
-            'POST',
-            { userId }
-        );
-        console.log('Connection request sent:', response);
-        return response;
+        const response = await authenticatedRequest(`${window.config.API_URL}/connections/request`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ receiverId: userId })
+        });
+
+        if (response.status === 'error') {
+            if (response.message.includes('pending connection request already exists')) {
+                showPendingRequestModal();
+            } else {
+                showError(response.message);
+            }
+            return;
+        }
+
+        // Show success message
+        showSuccess('Connection request sent successfully!');
+        
+        // Close the user modal
+        const userModal = document.getElementById('user-modal');
+        userModal.style.display = 'none';
+        
+        // Refresh the user cards to update the UI
+        await loadUsers();
     } catch (error) {
-        console.error('Error sending connection request:', error);
-        
-        // Extract the error message from the error response
-        let errorMessage = 'Failed to send connection request. Please try again.';
-        
-        if (error.response && (error.response.message || error.response.msg)) {
-            errorMessage = error.response.message || error.response.msg;
-        } else if (error.message) {
-            errorMessage = error.message;
-        }
-        
-        // Show appropriate error modal based on the error message and status
-        if (error.status === 409) {
-            showError(errorMessage); // Use the specific message from the backend
-        } else if (errorMessage.toLowerCase().includes('different roles') || 
-            errorMessage.toLowerCase().includes('same role')) {
-            showRoleMismatchError();
+        if (error.message.includes('pending connection request already exists')) {
+            showPendingRequestModal();
         } else {
-            showApiError(errorMessage);
+            showError('Error sending connection request. Please try again.');
         }
-        
-        throw error;
     }
 }
 

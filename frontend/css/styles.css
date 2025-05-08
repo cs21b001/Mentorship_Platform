@@ -771,6 +771,16 @@ h2 {
 .modal-body {
     padding: 20px;
     color: var(--text-secondary);
+    text-align: center;
+}
+
+.modal-body p {
+    margin: 0.5rem 0;
+}
+
+.modal-body p.text-bold {
+    font-weight: 600;
+    color: var(--text-primary);
 }
 
 .modal-footer {
@@ -943,4 +953,14 @@ h2 {
     .hamburger-menu.active span:nth-child(3) {
         transform: translateY(-9px) rotate(-45deg);
     }
+}
+
+.error-icon, .info-icon {
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.info-icon {
+    color: var(--primary-color);
 }
