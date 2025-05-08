@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "nodemon backend/server.js",
-    "test": "jest"
+    "test": "jest",
+    "postinstall": "echo mysql2 status && npm ls mysql2"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
