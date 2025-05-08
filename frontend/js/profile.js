@@ -351,7 +351,7 @@ function navigateToProfile(userId) {
 async function respondToRequest(connectionId, status) {
     try {
         const response = await authenticatedRequest(
-            `${window.config.API_URL}/connections/${status}/${connectionId}`,
+            `${window.config.API_URL}/connections/${status === 'accepted' ? 'accept' : 'reject'}/${connectionId}`,
             'POST'
         );
 
