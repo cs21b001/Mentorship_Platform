@@ -7,6 +7,7 @@ const dbConfig = {
     username: process.env.DB_USER || 'your_username_here',
     password: process.env.DB_PASSWORD || 'your_password_here',
     host: process.env.DB_HOST || 'localhost',
+    port: process.env.DB_PORT || 3306,
     dialect: 'mysql',
     logging: process.env.NODE_ENV === 'development' ? console.log : false,
     pool: {
@@ -33,10 +34,11 @@ const sequelize = new Sequelize(
     dbConfig.password,
     {
         host: dbConfig.host,
+        port: dbConfig.port,
         dialect: dbConfig.dialect,
         logging: dbConfig.logging,
         pool: dbConfig.pool,
-        define: dbConfig.define
+        define: dbConfig.define11284
     }
 );
 
