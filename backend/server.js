@@ -17,13 +17,49 @@ const PORT = process.env.PORT || 5000;
 testConnection();
 
 // Middleware
+const allowedOrigins = [
+    'http://127.0.0.1:5500',
+    'http://localhost:5500',
+    'http://localhost:3000',
+    'https://mentorship-platform.vercel.app',
+    'https://mentorship-platform-git-main.vercel.app',
+    'https://mentorship-platform-*.vercel.app'
+];
+
 app.use(cors({
-    origin: ['http://127.0.0.1:5500', 'http://localhost:5500', 'http://localhost:3000'],
+    origin: function(origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Check if the origin is allowed
+        if (allowedOrigins.some(allowedOrigin => {
+            // Handle wildcard domains
+            if (allowedOrigin.includes('*')) {
+                const pattern = new RegExp(allowedOrigin.replace('*', '.*'));
+                return pattern.test(origin);
+            }
+            return allowedOrigin === origin;
+        })) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 app.use(express.json());
+
+// Health check endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        status: 'success',
+        message: 'Mentorship Platform API is running',
+        timestamp: new Date().toISOString()
+    });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -34,6 +70,14 @@ app.use('/api/connections', connectionRoutes);
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ msg: 'Something went wrong!' });
+});
+
+// Handle 404 routes
+app.use('*', (req, res) => {
+    res.status(404).json({
+        status: 'error',
+        message: 'Route not found'
+    });
 });
 
 // Server
