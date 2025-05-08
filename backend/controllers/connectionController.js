@@ -4,16 +4,16 @@ const { Op } = require('sequelize');
 // Create connection request
 exports.createConnectionRequest = async (req, res) => {
     try {
-        const { userId } = req.body;
+        const { receiverId } = req.body;
         const initiatorId = req.user.id;
 
         console.log('Creating connection request:', {
             initiatorId,
-            targetUserId: userId
+            targetUserId: receiverId
         });
 
         // Prevent self-connection
-        if (userId === initiatorId) {
+        if (receiverId === initiatorId) {
             console.log('Self-connection attempt rejected');
             return res.status(400).json({
                 status: 'error',
@@ -24,7 +24,7 @@ exports.createConnectionRequest = async (req, res) => {
         // Get both users to check their roles
         const [initiator, target] = await Promise.all([
             User.findByPk(initiatorId),
-            User.findByPk(userId)
+            User.findByPk(receiverId)
         ]);
 
         console.log('Users found:', {
@@ -39,7 +39,7 @@ exports.createConnectionRequest = async (req, res) => {
         });
 
         if (!target) {
-            console.log('Target user not found:', userId);
+            console.log('Target user not found:', receiverId);
             return res.status(404).json({
                 status: 'error',
                 message: 'Target user not found'
@@ -67,8 +67,8 @@ exports.createConnectionRequest = async (req, res) => {
         }
 
         // Determine mentor and mentee based on roles
-        const mentorId = initiator.role === 'mentor' ? initiatorId : userId;
-        const menteeId = initiator.role === 'mentee' ? initiatorId : userId;
+        const mentorId = initiator.role === 'mentor' ? initiatorId : receiverId;
+        const menteeId = initiator.role === 'mentee' ? initiatorId : receiverId;
 
         console.log('Determined roles:', {
             mentorId,

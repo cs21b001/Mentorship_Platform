@@ -99,20 +99,20 @@
         </div>
     </main>
 
-    <!-- Role Mismatch Error Modal -->
-    <div id="role-error-modal" class="modal">
+    <!-- Role Mismatch Modal -->
+    <div id="role-mismatch-modal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Connection Not Allowed</h2>
                 <span class="close-modal">&times;</span>
             </div>
             <div class="modal-body">
-                <div class="error-icon">⚠️</div>
-                <p>You cannot connect with users who have the same role as you.</p>
+                <div class="info-icon">ℹ️</div>
+                <p>You can only connect with users who have a different role than yours.</p>
                 <p class="text-bold">Mentors can only connect with Mentees, and Mentees can only connect with Mentors.</p>
             </div>
             <div class="modal-footer">
-                <button id="understand-btn" class="btn btn-primary">I Understand</button>
+                <button class="btn btn-primary close-modal">❌</button>
             </div>
         </div>
     </div>

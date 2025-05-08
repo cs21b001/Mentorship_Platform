@@ -144,38 +144,83 @@ function showPendingRequestModal() {
     }
 }
 
+// Function to show role mismatch modal
+function showRoleMismatchModal() {
+    const modal = document.getElementById('role-mismatch-modal');
+    modal.style.display = 'block';
+
+    // Close modal functionality
+    const closeButtons = modal.querySelectorAll('.close-modal');
+    closeButtons.forEach(button => {
+        button.onclick = function() {
+            modal.style.display = 'none';
+        }
+    });
+
+    // Close on outside click
+    window.onclick = function(event) {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+}
+
 // Function to send connection request
 async function sendConnectionRequest(userId) {
     try {
-        const response = await authenticatedRequest(`${window.config.API_URL}/connections/request`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ receiverId: userId })
+        console.log('Sending connection request to user:', userId);
+        const response = await authenticatedRequest(
+            `${window.config.API_URL}/connections/request`,
+            'POST',
+            { receiverId: userId }
+        );
+
+        // Detailed response logging
+        console.log('Connection request response:', {
+            status: response.status,
+            message: response.message,
+            fullResponse: response
         });
 
-        if (response.status === 'error') {
-            if (response.message.includes('pending connection request already exists')) {
+        // Handle all error cases first
+        if (response.status !== 'success' || response.message) {
+            // Handle specific error cases
+            if (response.message?.includes('pending connection request already exists')) {
                 showPendingRequestModal();
-            } else {
-                showError(response.message);
+                return;
+            } 
+            if (response.message?.includes('different roles')) {
+                showRoleMismatchModal();
+                return;
             }
+            // Handle any other error
+            showError(response.message || 'Failed to send connection request');
             return;
         }
 
-        // Show success message
-        showSuccess('Connection request sent successfully!');
-        
-        // Close the user modal
+        // At this point, we're sure it's a success with no error message
+        // Close the user modal first
         const userModal = document.getElementById('user-modal');
-        userModal.style.display = 'none';
-        
-        // Refresh the user cards to update the UI
+        if (userModal) {
+            userModal.style.display = 'none';
+        }
+
+        // Show success message and refresh
+        showSuccess('Connection request sent successfully!');
         await loadUsers();
+
     } catch (error) {
-        if (error.message.includes('pending connection request already exists')) {
+        console.error('Connection request error:', {
+            error,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        // Handle specific error messages
+        if (error.message?.includes('pending connection request already exists')) {
             showPendingRequestModal();
+        } else if (error.message?.includes('different roles')) {
+            showRoleMismatchModal();
         } else {
             showError('Error sending connection request. Please try again.');
         }
@@ -265,6 +310,10 @@ async function showUserModal(response) {
         // Extract profile data from the response
         const profile = response.data || response;
 
+        // Set user ID for the connection request
+        sendRequestBtn.dataset.userId = profile.userId;
+        console.log('Setting user ID for connection request:', profile.userId);
+
         modalUserName.textContent = `${profile.User.firstName} ${profile.User.lastName}`;
         modalUserRole.textContent = profile.User.role;
         modalUserBio.textContent = profile.bio || 'No bio available';
@@ -284,9 +333,6 @@ async function showUserModal(response) {
                     ? profile.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
                     : '<span class="empty-message">No interests listed</span>'}
             </div>`;
-
-        // Set up send request button
-        sendRequestBtn.dataset.userId = profile.userId;
 
         // Show the modal
         modal.style.display = 'block';
