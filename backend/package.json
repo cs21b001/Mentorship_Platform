@@ -2,7 +2,7 @@
   "name": "mentorship-platform",
   "version": "1.0.0",
   "description": "A platform connecting mentors and mentees",
-  "main": "node server.js",
+  "main": "server.js",
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
