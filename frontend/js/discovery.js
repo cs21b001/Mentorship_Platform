@@ -1,13 +1,11 @@
 // Get all profiles with filters
 async function getProfiles(filters = {}) {
     try {
-        console.log('Fetching profiles with filters:', filters);
         const queryParams = new URLSearchParams();
         
         // Process role filter
         if (filters.role) {
             queryParams.append('role', filters.role);
-            console.log('Role filter:', filters.role);
         }
         
         // Process skills filter
@@ -19,8 +17,6 @@ async function getProfiles(filters = {}) {
                 .join(',');
                 
             if (processedSkills) {
-                console.log('Skills filter:', processedSkills);
-                console.log('Individual skills:', processedSkills.split(','));
                 queryParams.append('skills', processedSkills);
             }
         }
@@ -34,8 +30,6 @@ async function getProfiles(filters = {}) {
                 .join(',');
                 
             if (processedInterests) {
-                console.log('Interests filter:', processedInterests);
-                console.log('Individual interests:', processedInterests.split(','));
                 queryParams.append('interests', processedInterests);
             }
         }
@@ -44,32 +38,8 @@ async function getProfiles(filters = {}) {
         queryParams.append('_t', Date.now());
         
         const url = `${window.config.API_URL}/profile?${queryParams.toString()}`;
-        console.log('Fetching profiles from:', url);
-        console.log('Query parameters:', Object.fromEntries(queryParams.entries()));
-        
         const response = await authenticatedRequest(url);
-        console.log('Raw API response:', response);
-        
-        // Extract profiles array from response
-        const profiles = response.data;
-        console.log('Number of profiles found:', profiles.length);
-        
-        if (profiles.length > 0) {
-            console.log('Profiles found:');
-            profiles.forEach(profile => {
-                console.log(`Profile ${profile.userId} (${profile.User.firstName} ${profile.User.lastName}):`);
-                if (filters.skills) {
-                    console.log('- Skills:', profile.skills);
-                }
-                if (filters.interests) {
-                    console.log('- Interests:', profile.interests);
-                }
-            });
-        } else {
-            console.log('No profiles found matching the criteria');
-        }
-        
-        return profiles;
+        return response.data;
     } catch (error) {
         console.error('Error fetching profiles:', error);
         throw error;
@@ -168,19 +138,11 @@ function showRoleMismatchModal() {
 // Function to send connection request
 async function sendConnectionRequest(userId) {
     try {
-        console.log('Sending connection request to user:', userId);
         const response = await authenticatedRequest(
             `${window.config.API_URL}/connections/request`,
             'POST',
             { receiverId: userId }
         );
-
-        // Detailed response logging
-        console.log('Connection request response:', {
-            status: response.status,
-            message: response.message,
-            fullResponse: response
-        });
 
         // Handle all error cases first
         if (response.status !== 'success' || response.message) {
@@ -210,11 +172,7 @@ async function sendConnectionRequest(userId) {
         await loadUsers();
 
     } catch (error) {
-        console.error('Connection request error:', {
-            error,
-            message: error.message,
-            stack: error.stack
-        });
+        console.error('Connection request error:', error);
         
         // Handle specific error messages
         if (error.message?.includes('pending connection request already exists')) {
@@ -393,7 +351,6 @@ function showError(message) {
 
 // Initialize page on load
 window.addEventListener('load', () => {
-    console.log('Window loaded, initializing discovery page...');
     initializeDiscoveryPage();
     
     // Handle modal close button
@@ -554,8 +511,6 @@ async function cancelRequest(requestId) {
 // Initialize discovery page
 async function initializeDiscoveryPage() {
     try {
-        console.log('Initializing discovery page...');
-        
         // Get initial profiles
         const profiles = await getProfiles();
         updateUserCards(profiles);
@@ -583,7 +538,6 @@ async function initializeDiscoveryPage() {
                         interests: interestsFilter.value
                     };
                     
-                    console.log('Applying filters:', filters);
                     const profiles = await getProfiles(filters);
                     updateUserCards(profiles);
                 } catch (error) {
@@ -603,9 +557,7 @@ async function initializeDiscoveryPage() {
             if (viewProfileBtn) {
                 const userId = viewProfileBtn.dataset.userId;
                 try {
-                    console.log('Fetching profile for user:', userId);
                     const response = await authenticatedRequest(`${window.config.API_URL}/profile/user/${userId}`);
-                    console.log('Profile data received:', response);
                     showUserModal(response);
                 } catch (error) {
                     console.error('Error fetching profile:', error);
@@ -628,7 +580,6 @@ async function initializeDiscoveryPage() {
                 closeUserModal();
             } catch (error) {
                 console.error('Error sending connection request:', error);
-                // Error is already handled in sendConnectionRequest function
             }
         });
         

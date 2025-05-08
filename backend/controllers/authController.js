@@ -29,11 +29,8 @@ exports.register = async (req, res) => {
       role
     };
 
-    console.log('Creating user with data:', { ...userData, password: '[HIDDEN]' });
-    
     const user = await User.create(userData, { transaction: t });
-    console.log('Created user:', { id: user.id, email: user.email });
-
+    
     // Create profile data
     const profileData = {
       userId: user.id,
@@ -42,15 +39,11 @@ exports.register = async (req, res) => {
       interests: interests || []
     };
 
-    console.log('Creating profile with data:', profileData);
-
     // Create profile for the user
     const profile = await Profile.create(profileData, { transaction: t });
-    console.log('Created profile:', profile.toJSON());
     
     // Commit the transaction
     await t.commit();
-    console.log('Transaction committed successfully');
     
     // Generate JWT token
     const token = jwt.sign(

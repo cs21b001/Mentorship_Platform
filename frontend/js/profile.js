@@ -1,9 +1,7 @@
 // Get user profile
 async function getUserProfile() {
     try {
-        console.log('Fetching profile data...');
         const response = await authenticatedRequest(`${window.config.API_URL}/profile/me`);
-        console.log('Raw profile response:', response);
         return response;
     } catch (error) {
         console.error('Error fetching profile:', error);
@@ -294,83 +292,48 @@ function updateActiveConnections(acceptedConnectionsContainer, data) {
 // Update profile view
 function updateProfileView(data) {
     try {
-        console.log('Starting updateProfileView with data:', data);
-        
-        // Update user info
-        const nameElement = document.getElementById('profile-name');
-        const emailElement = document.getElementById('profile-email');
-        const roleElement = document.getElementById('profile-role');
-        const bioElement = document.getElementById('profile-bio');
-        const skillsElement = document.getElementById('profile-skills');
-        const interestsElement = document.getElementById('profile-interests');
-        
-        console.log('Found DOM elements:', {
-            nameElement: !!nameElement,
-            emailElement: !!emailElement,
-            roleElement: !!roleElement,
-            bioElement: !!bioElement,
-            skillsElement: !!skillsElement,
-            interestsElement: !!interestsElement
-        });
+        // Get DOM elements
+        const nameElement = document.getElementById('user-name');
+        const emailElement = document.getElementById('user-email');
+        const roleElement = document.getElementById('user-role');
+        const bioElement = document.getElementById('user-bio');
+        const skillsContainer = document.getElementById('skills-container');
+        const interestsContainer = document.getElementById('interests-container');
+        const connectionsContainer = document.getElementById('connections-container');
+        const pendingContainer = document.getElementById('pending-connections');
 
-        console.log('User data from response:', data.User);
-        
-        if (nameElement) {
-            const fullName = `${data.User?.firstName || ''} ${data.User?.lastName || ''}`.trim();
-            nameElement.textContent = fullName || 'Name not available';
-            console.log('Set name to:', fullName);
-        }
-        if (emailElement && data.User?.email) {
-            emailElement.textContent = data.User.email;
-            console.log('Set email to:', data.User.email);
-        }
-        if (roleElement && data.User?.role) {
-            roleElement.textContent = data.User.role;
-            console.log('Set role to:', data.User.role);
-        }
-        if (bioElement) {
-            bioElement.textContent = data.bio || 'No bio available';
-            console.log('Set bio to:', data.bio || 'No bio available');
-        }
-        if (skillsElement) {
-            skillsElement.innerHTML = `
-                <div class="user-skills" data-label="Skills">
-                    ${data.skills && data.skills.length > 0
-                        ? data.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
-                        : '<span class="empty-message">No skills listed</span>'}
-                </div>`;
-            console.log('Set skills');
-        }
-        if (interestsElement) {
-            interestsElement.innerHTML = `
-                <div class="user-interests" data-label="Interests">
-                    ${data.interests && data.interests.length > 0
-                        ? data.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
-                        : '<span class="empty-message">No interests listed</span>'}
-                </div>`;
-            console.log('Set interests');
+        // Update user information
+        if (data.User) {
+            const fullName = `${data.User.firstName} ${data.User.lastName}`;
+            if (nameElement) nameElement.textContent = fullName;
+            if (emailElement) emailElement.textContent = data.User.email;
+            if (roleElement) roleElement.textContent = data.User.role;
         }
 
-        // Update connections sections
-        const pendingConnectionsContainer = document.getElementById('pending-connections');
-        const acceptedConnectionsContainer = document.getElementById('accepted-connections');
-        
-        console.log('Found connections containers:', {
-            pendingContainer: !!pendingConnectionsContainer,
-            acceptedContainer: !!acceptedConnectionsContainer
-        });
+        if (bioElement) bioElement.textContent = data.bio || 'No bio available';
 
-        updatePendingRequests(pendingConnectionsContainer, data);
-        updateActiveConnections(acceptedConnectionsContainer, data);
+        // Update skills
+        if (skillsContainer) {
+            skillsContainer.innerHTML = data.skills && data.skills.length > 0
+                ? data.skills.map(skill => `<span class="tag skill">${skill}</span>`).join('')
+                : '<p>No skills listed</p>';
+        }
+
+        // Update interests
+        if (interestsContainer) {
+            interestsContainer.innerHTML = data.interests && data.interests.length > 0
+                ? data.interests.map(interest => `<span class="tag interest">${interest}</span>`).join('')
+                : '<p>No interests listed</p>';
+        }
+
+        // Update connections
+        if (connectionsContainer && pendingContainer) {
+            updateConnectionsView(data);
+        }
 
     } catch (error) {
-        console.error('Error in updateProfileView:', error);
-        console.error('Error details:', {
-            message: error.message,
-            stack: error.stack,
-            data: data
-        });
-        showError('Failed to update profile view. Please try again.');
+        console.error('Error updating profile view:', error);
+        showError('Failed to update profile view');
     }
 }
 
@@ -391,19 +354,20 @@ function navigateToProfile(userId) {
 // Respond to connection request
 async function respondToRequest(connectionId, status) {
     try {
-        console.log('Responding to connection request:', connectionId, status);
-        const endpoint = status === 'accepted' ? 'accept' : 'reject';
         const response = await authenticatedRequest(
-            `${window.config.API_URL}/connections/${endpoint}/${connectionId}`,
+            `${window.config.API_URL}/connections/${status}/${connectionId}`,
             'POST'
         );
-        console.log('Response to request:', response);
-        showSuccess(`Connection request ${status} successfully!`);
-        // Refresh profile data
-        await fetchProfileData();
+
+        if (response.status === 'success') {
+            showSuccess(`Connection request ${status} successfully`);
+            await fetchProfileData();
+        } else {
+            showError(`Failed to ${status} connection request`);
+        }
     } catch (error) {
-        console.error('Error responding to request:', error);
-        showError(`Failed to ${status} request. Please try again.`);
+        console.error(`Error ${status}ing connection request:`, error);
+        showError(`Failed to ${status} connection request`);
     }
 }
 
@@ -473,7 +437,6 @@ window.addEventListener('load', () => {
 // Initialize profile page
 async function initializeProfilePage() {
     try {
-        console.log('Initializing profile page...');
         await fetchProfileData();
         initializeTabs();
     } catch (error) {

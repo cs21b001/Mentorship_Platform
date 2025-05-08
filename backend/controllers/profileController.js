@@ -133,16 +133,12 @@ exports.getCurrentProfile = async (req, res) => {
       ]
     });
     
-    // Add debug logging
-    console.log('Raw profile data:', JSON.stringify(profile, null, 2));
-    
     const profileData = {
       ...profile.toJSON(),
       pendingRequests,
       activeConnections
     };
     
-    console.log('Sending profile data:', JSON.stringify(profileData, null, 2));
     res.json(profileData);
   } catch (error) {
     console.error('Error in getCurrentProfile:', error);

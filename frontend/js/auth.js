@@ -219,7 +219,6 @@ async function registerUser(userData) {
 // Handle user login
 async function loginUser(email, password) {
     try {
-        console.log('Attempting login for:', email);
         const response = await fetch(`${API_URL}/auth/login`, {
             method: 'POST',
             headers: {
@@ -229,7 +228,6 @@ async function loginUser(email, password) {
         });
 
         const data = await response.json();
-        console.log('Login response:', data);
         
         if (!response.ok) {
             throw new Error(data.msg || 'Login failed');
@@ -249,7 +247,6 @@ async function loginUser(email, password) {
             throw new Error('Failed to save token');
         }
         
-        console.log('Login successful, token saved, redirecting to profile...');
         // Redirect to profile page
         window.location.href = 'profile.html';
         
@@ -288,7 +285,6 @@ function getToken() {
 window.authenticatedRequest = async function(url, method = 'GET', body = null) {
     try {
         const token = getToken();
-        console.log('Token from storage:', token ? 'Present' : 'Missing');
         
         if (!token) {
             throw new Error('Authentication required');
@@ -298,9 +294,6 @@ window.authenticatedRequest = async function(url, method = 'GET', body = null) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         };
-        
-        console.log('Making authenticated request to:', url);
-        console.log('Request headers:', { ...headers, Authorization: 'Bearer [HIDDEN]' });
         
         const options = {
             method,
@@ -312,10 +305,8 @@ window.authenticatedRequest = async function(url, method = 'GET', body = null) {
         }
         
         const response = await fetch(url, options);
-        console.log('Response status:', response.status);
         
         const data = await response.json();
-        console.log('Response data:', data);
         
         if (!response.ok) {
             const error = new Error(data.message || data.msg || 'Request failed');
@@ -326,13 +317,10 @@ window.authenticatedRequest = async function(url, method = 'GET', body = null) {
         
         return data;
     } catch (error) {
-        console.error('API request error:', error);
-        
         // Redirect to login if unauthorized
         if (error.status === 401 || 
             error.message === 'Authentication required' || 
             error.message === 'Token is not valid') {
-            console.log('Authentication error detected, logging out...');
             logoutUser();
         }
         

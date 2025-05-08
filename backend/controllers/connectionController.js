@@ -7,14 +7,8 @@ exports.createConnectionRequest = async (req, res) => {
         const { receiverId } = req.body;
         const initiatorId = req.user.id;
 
-        console.log('Creating connection request:', {
-            initiatorId,
-            targetUserId: receiverId
-        });
-
         // Prevent self-connection
         if (receiverId === initiatorId) {
-            console.log('Self-connection attempt rejected');
             return res.status(400).json({
                 status: 'error',
                 message: 'You cannot send a connection request to yourself'
@@ -27,19 +21,7 @@ exports.createConnectionRequest = async (req, res) => {
             User.findByPk(receiverId)
         ]);
 
-        console.log('Users found:', {
-            initiator: initiator ? {
-                id: initiator.id,
-                role: initiator.role
-            } : null,
-            target: target ? {
-                id: target.id,
-                role: target.role
-            } : null
-        });
-
         if (!target) {
-            console.log('Target user not found:', receiverId);
             return res.status(404).json({
                 status: 'error',
                 message: 'Target user not found'
@@ -47,7 +29,6 @@ exports.createConnectionRequest = async (req, res) => {
         }
 
         if (!initiator) {
-            console.log('Initiator user not found:', initiatorId);
             return res.status(404).json({
                 status: 'error',
                 message: 'Initiator user not found'
@@ -56,10 +37,6 @@ exports.createConnectionRequest = async (req, res) => {
 
         // Check if users have different roles
         if (initiator.role === target.role) {
-            console.log('Role mismatch:', {
-                initiatorRole: initiator.role,
-                targetRole: target.role
-            });
             return res.status(400).json({
                 status: 'error',
                 message: 'Mentor and mentee must have different roles'
@@ -69,13 +46,6 @@ exports.createConnectionRequest = async (req, res) => {
         // Determine mentor and mentee based on roles
         const mentorId = initiator.role === 'mentor' ? initiatorId : receiverId;
         const menteeId = initiator.role === 'mentee' ? initiatorId : receiverId;
-
-        console.log('Determined roles:', {
-            mentorId,
-            menteeId,
-            initiatorRole: initiator.role,
-            targetRole: target.role
-        });
 
         // Check for existing active or pending connection
         const existingConnection = await Connection.findOne({
@@ -88,16 +58,6 @@ exports.createConnectionRequest = async (req, res) => {
                     [Op.in]: ['pending', 'accepted']
                 }
             }
-        });
-
-        console.log('Existing connection check:', {
-            exists: !!existingConnection,
-            connection: existingConnection ? {
-                id: existingConnection.id,
-                status: existingConnection.status,
-                mentorId: existingConnection.mentorId,
-                menteeId: existingConnection.menteeId
-            } : null
         });
 
         if (existingConnection) {
@@ -118,30 +78,12 @@ exports.createConnectionRequest = async (req, res) => {
             status: 'pending'
         });
 
-        console.log('Connection request created:', {
-            id: connection.id,
-            mentorId: connection.mentorId,
-            menteeId: connection.menteeId,
-            initiatorId: connection.initiatorId,
-            status: connection.status
-        });
-
         res.status(201).json({
             status: 'success',
             data: connection
         });
 
     } catch (error) {
-        console.error('Error creating connection request:', {
-            error: {
-                message: error.message,
-                stack: error.stack,
-                name: error.name
-            },
-            requestBody: req.body,
-            userId: req.user?.id
-        });
-
         // Check for specific error types
         if (error.name === 'SequelizeUniqueConstraintError') {
             return res.status(409).json({
@@ -243,7 +185,6 @@ exports.getConnections = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error fetching connections:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch connections'
@@ -284,7 +225,6 @@ exports.acceptRequest = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error accepting connection request:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to accept connection request'
@@ -325,7 +265,6 @@ exports.rejectRequest = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error rejecting connection request:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to reject connection request'
@@ -362,7 +301,6 @@ exports.cancelRequest = async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error cancelling connection request:', error);
         res.status(500).json({
             status: 'error',
             message: 'Failed to cancel connection request'
