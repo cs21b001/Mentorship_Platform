@@ -2,10 +2,10 @@
   "name": "mentorship-platform",
   "version": "1.0.0",
   "description": "A platform connecting mentors and mentees",
-  "main": "backend/server.js",
+  "main": "server.js",
   "scripts": {
-    "start": "node backend/server.js",
-    "dev": "nodemon backend/server.js",
+    "start": "server.js",
+    "dev": "nodemon server.js",
     "test": "jest",
     "postinstall": "echo mysql2 status && npm ls mysql2"
   },
