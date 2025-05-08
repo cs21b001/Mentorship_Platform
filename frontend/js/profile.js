@@ -293,14 +293,12 @@ function updateActiveConnections(acceptedConnectionsContainer, data) {
 function updateProfileView(data) {
     try {
         // Get DOM elements
-        const nameElement = document.getElementById('user-name');
-        const emailElement = document.getElementById('user-email');
-        const roleElement = document.getElementById('user-role');
-        const bioElement = document.getElementById('user-bio');
-        const skillsContainer = document.getElementById('skills-container');
-        const interestsContainer = document.getElementById('interests-container');
-        const connectionsContainer = document.getElementById('connections-container');
-        const pendingContainer = document.getElementById('pending-connections');
+        const nameElement = document.getElementById('profile-name');
+        const emailElement = document.getElementById('profile-email');
+        const roleElement = document.getElementById('profile-role');
+        const bioElement = document.getElementById('profile-bio');
+        const skillsContainer = document.getElementById('profile-skills');
+        const interestsContainer = document.getElementById('profile-interests');
 
         // Update user information
         if (data.User) {
@@ -327,9 +325,7 @@ function updateProfileView(data) {
         }
 
         // Update connections
-        if (connectionsContainer && pendingContainer) {
-            updateConnectionsView(data);
-        }
+        updateConnectionsView(data);
 
     } catch (error) {
         console.error('Error updating profile view:', error);
@@ -558,22 +554,43 @@ function populateProfileForm(data) {
     const form = document.getElementById('update-profile-form');
     if (!form) return;
 
-    // Set bio
-    form.querySelector('#bio').value = data.bio || '';
-    
-    // Set skills
-    form.querySelector('#skills').value = data.skills ? data.skills.join(', ') : '';
-    
-    // Set interests
-    form.querySelector('#interests').value = data.interests ? data.interests.join(', ') : '';
+    // Set name fields
+    const firstNameInput = document.getElementById('first-name');
+    const lastNameInput = document.getElementById('last-name');
+    if (firstNameInput && data.User) firstNameInput.value = data.User.firstName || '';
+    if (lastNameInput && data.User) lastNameInput.value = data.User.lastName || '';
     
     // Set role radio button
-    const roleRadio = form.querySelector(`input[name="role"][value="${data.User.role}"]`);
-    if (roleRadio) roleRadio.checked = true;
+    if (data.User && data.User.role) {
+        const roleRadio = form.querySelector(`input[name="role"][value="${data.User.role}"]`);
+        if (roleRadio) roleRadio.checked = true;
+    }
     
-    // Set name fields
-    form.querySelector('#first-name').value = data.User.firstName;
-    form.querySelector('#last-name').value = data.User.lastName;
+    // Set bio
+    const bioInput = document.getElementById('bio');
+    if (bioInput) bioInput.value = data.bio || '';
+    
+    // Set skills
+    const skillsInput = document.getElementById('skills');
+    if (skillsInput) skillsInput.value = data.skills ? data.skills.join(', ') : '';
+    
+    // Set interests
+    const interestsInput = document.getElementById('interests');
+    if (interestsInput) interestsInput.value = data.interests ? data.interests.join(', ') : '';
+}
+
+// Update connections view
+function updateConnectionsView(data) {
+    const pendingContainer = document.getElementById('pending-connections');
+    const acceptedContainer = document.getElementById('accepted-connections');
+
+    if (pendingContainer) {
+        updatePendingRequests(pendingContainer, data);
+    }
+
+    if (acceptedContainer) {
+        updateActiveConnections(acceptedContainer, data);
+    }
 }
 
 // Delete account
