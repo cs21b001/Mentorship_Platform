@@ -371,12 +371,14 @@ async function respondToRequest(connectionId, status) {
 async function removeConnection(connectionId) {
     try {
         await authenticatedRequest(
-            `${window.config.API_URL}/connections/${connectionId}`,
-            'DELETE'
+            `${window.config.API_URL}/connections/cancel/${connectionId}`,
+            'POST'
         );
+        showSuccess('Connection removed successfully');
+        await fetchProfileData();
     } catch (error) {
         console.error('Error removing connection:', error);
-        throw error;
+        showError('Failed to remove connection. Please try again.');
     }
 }
 
