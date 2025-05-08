@@ -873,3 +873,74 @@ h2 {
     padding: 30px;
     color: var(--text-secondary);
 }
+
+/* Hamburger Menu */
+.hamburger-menu {
+    display: none;
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+    z-index: 100;
+}
+
+.hamburger-menu span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background-color: var(--text-primary);
+    transition: all 0.3s ease;
+}
+
+/* Mobile Navigation Styles */
+@media (max-width: 768px) {
+    .hamburger-menu {
+        display: flex;
+    }
+
+    .navbar-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 250px;
+        height: 100vh;
+        background-color: var(--background-white);
+        padding: 80px 20px 20px;
+        transition: right 0.3s ease;
+        box-shadow: var(--shadow-lg);
+        z-index: 99;
+    }
+
+    .navbar-menu.active {
+        right: 0;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .nav-item {
+        margin-left: 0;
+    }
+
+    .nav-link {
+        display: block;
+        padding: 10px 0;
+        font-size: 1.1rem;
+    }
+
+    /* Hamburger Menu Animation */
+    .hamburger-menu.active span:nth-child(1) {
+        transform: translateY(9px) rotate(45deg);
+    }
+
+    .hamburger-menu.active span:nth-child(2) {
+        opacity: 0;
+    }
+
+    .hamburger-menu.active span:nth-child(3) {
+        transform: translateY(-9px) rotate(-45deg);
+    }
+}
