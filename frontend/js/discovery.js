@@ -169,7 +169,8 @@ async function sendConnectionRequest(userId) {
 
         // Show success message and refresh
         showSuccess('Connection request sent successfully!');
-        await loadUsers();
+        const updatedProfiles = await getProfiles();
+        updateUserCards(updatedProfiles);
 
     } catch (error) {
         console.error('Connection request error:', error);
