@@ -25,4 +25,8 @@ router.post('/reject/:requestId', auth, connectionController.rejectRequest);
 // POST /api/connections/cancel/:requestId
 router.post('/cancel/:requestId', auth, connectionController.cancelRequest);
 
+// Remove active connection
+// DELETE /api/connections/:connectionId
+router.delete('/:connectionId', auth, connectionController.removeConnection);
+
 module.exports = router;

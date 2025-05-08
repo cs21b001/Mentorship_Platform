@@ -307,3 +307,42 @@ exports.cancelRequest = async (req, res) => {
         });
     }
 };
+
+// Remove active connection
+exports.removeConnection = async (req, res) => {
+    try {
+        const { connectionId } = req.params;
+        const userId = req.user.id;
+
+        const connection = await Connection.findOne({
+            where: {
+                id: connectionId,
+                [Op.or]: [
+                    { mentorId: userId },
+                    { menteeId: userId }
+                ],
+                status: 'accepted'
+            }
+        });
+
+        if (!connection) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Active connection not found'
+            });
+        }
+
+        await connection.destroy();
+
+        res.json({
+            status: 'success',
+            message: 'Connection removed successfully'
+        });
+
+    } catch (error) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to remove connection'
+        });
+    }
+};

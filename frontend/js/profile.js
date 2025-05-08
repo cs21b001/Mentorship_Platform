@@ -371,8 +371,8 @@ async function respondToRequest(connectionId, status) {
 async function removeConnection(connectionId) {
     try {
         await authenticatedRequest(
-            `${window.config.API_URL}/connections/cancel/${connectionId}`,
-            'POST'
+            `${window.config.API_URL}/connections/${connectionId}`,
+            'DELETE'
         );
         showSuccess('Connection removed successfully');
         await fetchProfileData();
