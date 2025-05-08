@@ -1,5 +1,6 @@
 // Constants
-const API_URL = 'http://localhost:5000/api';
+// const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://mentorship-platform-backend.vercel.app/api';
 
 // Get all connections for current user
 async function getConnections() {
