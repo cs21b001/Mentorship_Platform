@@ -604,7 +604,7 @@ async function deleteAccount() {
         );
         // Clear auth token and redirect to home page
         localStorage.removeItem('token');
-        window.location.href = '/frontend/index.html';
+        window.location.href = '/index.html';
     } catch (error) {
         console.error('Error deleting account:', error);
         throw error;
